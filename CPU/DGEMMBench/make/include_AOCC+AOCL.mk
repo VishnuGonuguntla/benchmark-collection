@@ -1,0 +1,8 @@
+ENV_CC ?= clang
+ENV_CFLAGS ?= -O3
+ENV_OMP_FLAG ?= -fopenmp
+ENV_INCDIRS ?= -I$(AOCL_INCDIR)
+ENV_LIBDIRS ?= -L$(AOCL_LIBDIR)
+ENV_DEFINES ?= -DDGEMM_BENCH_WITH_AOCL
+ENV_LIBS ?= -lblis-mt
+ENV_MODULES ?= aocc/5.0.0 aocl/5.0.0-aocc
