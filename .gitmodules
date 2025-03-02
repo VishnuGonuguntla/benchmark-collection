@@ -2,7 +2,7 @@
 	path = CPU/mpi-benchmarks
 	url = https://github.com/intel/mpi-benchmarks.git
 
+
 [submodule "CPU/TheBandwidthBenchmark"]
 	path = CPU/TheBandwidthBenchmark
 	url = https://github.com/RRZE-HPC/TheBandwidthBenchmark.git
-
