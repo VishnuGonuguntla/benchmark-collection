@@ -1,0 +1,13 @@
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
+
+gemm
+gemm_sweep
+
+tp64_*
+
+scaling_results

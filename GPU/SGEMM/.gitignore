@@ -1,0 +1,11 @@
+*.i
+*.ii
+*.gpu
+*.ptx
+*.cubin
+*.fatbin
+
+scaling_results
+fp32_*
+gemm_sweep
+gemm

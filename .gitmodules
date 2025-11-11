@@ -6,6 +6,11 @@
 [submodule "CPU/TheBandwidthBenchmark"]
 	path = CPU/TheBandwidthBenchmark
 	url = https://github.com/RRZE-HPC/TheBandwidthBenchmark.git
+
+[submodule "GPU/TheBandwidthBenchmark"]
+	path = GPU/TheBandwidthBenchmark
+	url = https://github.com/RRZE-HPC/TheBandwidthBenchmark.git
+
 [submodule "GPU/gpu-benches"]
 	path = GPU/gpu-benches
 	url = https://github.com/RRZE-HPC/gpu-benches.git
