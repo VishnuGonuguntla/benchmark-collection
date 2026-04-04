@@ -1,5 +1,6 @@
 #include "portability.h" // HIP/CUDA portability + backend metric headers
 #include "cli.h"         // CLI argument parsing
+#include "metrics.h"     // GPU telemetry monitoring
 
 #include <iostream>
 #include <stdlib.h>
@@ -179,46 +180,11 @@ int main(int argc, char **argv)
   checkCublas(cublasSetMathMode(handle, CUBLAS_TF32_TENSOR_OP_MATH));
 #endif
 
-  // ---------------------------------------------------------------------------
-  // Telemetry init — single flag -DMETRICS selects NVML (CUDA) or ROCm SMI (HIP)
-  // Initialised once outside the sweep loop; accumulators reset per size.
-  // ---------------------------------------------------------------------------
 #ifdef METRICS
-#ifndef _HIP // --- NVML (CUDA) ---
-  nvmlReturn_t nvmlResult;
-  nvmlDevice_t nvmlDev;
-  nvmlResult = nvmlInit();
-  if (nvmlResult != NVML_SUCCESS)
-  {
-    cerr << "Failed to init NVML: " << nvmlErrorString(nvmlResult) << endl;
+  GpuMonitor monitor;
+  if (!monitor.init(device_id, gpu_id))
     return 1;
-  }
-  nvmlResult = nvmlDeviceGetHandleByIndex(device_id, &nvmlDev);
-  if (nvmlResult != NVML_SUCCESS)
-  {
-    cerr << "Failed to get NVML device: " << nvmlErrorString(nvmlResult) << endl;
-    return 1;
-  }
-#else // --- ROCm SMI (HIP) ---
-  rsmi_status_t rsmiResult = rsmi_init(0);
-  if (rsmiResult != RSMI_STATUS_SUCCESS)
-  {
-    const char *err_str;
-    rsmi_status_string(rsmiResult, &err_str);
-    cerr << "Failed to init ROCm SMI: " << err_str << endl;
-    return 1;
-  }
-  // gpu_id matches ROCm SMI device ordering (both use BDF/PCI bus order)
-  uint32_t rsmi_dev_idx = (uint32_t)gpu_id;
 #endif
-
-  // SM = Streaming Multiprocessors (NVIDIA); CU = Compute Units (AMD)
-#ifndef _HIP
-  const char *util_label = "SM Util";
-#else
-  const char *util_label = "CU Util";
-#endif
-#endif // METRICS
 
   size_t max_bytes = matrix_dimension * matrix_dimension * sizeof(GEMM_FLOAT);
   cout << "Max allocation per matrix: " << max_bytes / 1e9 << " GB" << endl ;
@@ -255,11 +221,8 @@ int main(int argc, char **argv)
     init_data<<<blocks, threads>>>(d_A, d_B, d_C, size, (unsigned long long)time(NULL));
     checkCuda(cudaDeviceSynchronize());
 
-    // Per-size telemetry accumulators
 #ifdef METRICS
-    double totalPower = 0.0, totalClock = 0.0, totalTemp = 0.0;
-    unsigned long long totalGpuUtil = 0, totalMemUtil = 0;
-    int monitor_samples = 0;
+    monitor.start();
 #endif
 
     double sum = 0.0;
@@ -295,47 +258,6 @@ int main(int argc, char **argv)
                                         m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc);
 #endif
 
-      // --- Sample telemetry while GPU is still computing (before sync) ---
-#ifdef METRICS
-#ifndef _HIP // NVML
-      {
-        unsigned int power_mW, clock_MHz, temp_C;
-        nvmlUtilization_t util;
-        if (nvmlDeviceGetPowerUsage(nvmlDev, &power_mW) == NVML_SUCCESS)
-          totalPower += power_mW / 1000.0; // mW  -> W
-        if (nvmlDeviceGetClockInfo(nvmlDev, NVML_CLOCK_GRAPHICS, &clock_MHz) == NVML_SUCCESS)
-          totalClock += clock_MHz;
-        if (nvmlDeviceGetTemperature(nvmlDev, NVML_TEMPERATURE_GPU, &temp_C) == NVML_SUCCESS)
-          totalTemp += temp_C;
-        if (nvmlDeviceGetUtilizationRates(nvmlDev, &util) == NVML_SUCCESS)
-        {
-          totalGpuUtil += util.gpu;
-          totalMemUtil += util.memory;
-        }
-      }
-#else // ROCm SMI
-      {
-        uint64_t power_uW;
-        RSMI_POWER_TYPE power_type;
-        rsmi_frequencies_t freqs;
-        int64_t temp_mC;
-        uint32_t busy_pct;
-        if (rsmi_dev_power_get(rsmi_dev_idx, &power_uW, &power_type) == RSMI_STATUS_SUCCESS)
-          totalPower += (double)power_uW / 1e6; // μW  -> W
-        if (rsmi_dev_gpu_clk_freq_get(rsmi_dev_idx, RSMI_CLK_TYPE_SYS, &freqs) == RSMI_STATUS_SUCCESS)
-          totalClock += (double)freqs.frequency[freqs.current] / 1e6; // Hz  -> MHz
-        if (rsmi_dev_temp_metric_get(rsmi_dev_idx, RSMI_TEMP_TYPE_JUNCTION,
-                                     RSMI_TEMP_CURRENT, &temp_mC) == RSMI_STATUS_SUCCESS)
-          totalTemp += temp_mC / 1000.0; // m°C -> °C
-        if (rsmi_dev_busy_percent_get(rsmi_dev_idx, &busy_pct) == RSMI_STATUS_SUCCESS)
-          totalGpuUtil += busy_pct;
-        if (rsmi_dev_memory_busy_percent_get(rsmi_dev_idx, &busy_pct) == RSMI_STATUS_SUCCESS)
-          totalMemUtil += busy_pct;
-      }
-#endif
-      monitor_samples++;
-#endif // METRICS
-
       checkCuda(cudaEventRecord(ev_stop, 0));
       checkCuda(cudaEventSynchronize(ev_stop));
 
@@ -348,6 +270,10 @@ int main(int argc, char **argv)
       actual_repeats++;
     }
 
+#ifdef METRICS
+    monitor.stop();
+#endif
+
     checkCuda(cudaFree(d_A));
     checkCuda(cudaFree(d_B));
     checkCuda(cudaFree(d_C));
@@ -359,21 +285,16 @@ int main(int argc, char **argv)
 
     // --- Print results for this size ---
 #ifdef METRICS
-    double avgPower = (monitor_samples > 0) ? totalPower / monitor_samples : 0.0;
-    double avgClock = (monitor_samples > 0) ? totalClock / monitor_samples : 0.0;
-    double avgTemp = (monitor_samples > 0) ? totalTemp / monitor_samples : 0.0;
-    double avgGpu = (monitor_samples > 0) ? (double)totalGpuUtil / monitor_samples : 0.0;
-    double avgMem = (monitor_samples > 0) ? (double)totalMemUtil / monitor_samples : 0.0;
-
+    MetricsAvg avg = monitor.averages();
     cout << "size " << size
          << " | Time: " << sum << " s"
          << " | Repeats: " << actual_repeats
          << " | Perf: " << totalFlops / sum / 1e12 << " TFlop/s"
-         << " | Avg Power: " << avgPower << " W"
-         << " | Avg Clock: " << avgClock << " MHz"
-         << " | Avg Temp: " << avgTemp << " C"
-         << " | " << util_label << ": " << avgGpu << " %"
-         << " | Mem Util: " << avgMem << " %" << endl;
+         << " | Avg Power: " << avg.power << " W"
+         << " | Avg Clock: " << avg.clock << " MHz"
+         << " | Avg Temp: " << avg.temp << " C"
+         << " | " << GpuMonitor::util_label() << ": " << avg.gpu_util << " %"
+         << " | Mem Util: " << avg.mem_util << " %" << endl;
 #else
     cout << "size " << size
          << " | Time: " << sum << " s"
@@ -382,15 +303,8 @@ int main(int argc, char **argv)
 #endif
   }
 
-  // ---------------------------------------------------------------------------
-  // Shutdown telemetry
-  // ---------------------------------------------------------------------------
 #ifdef METRICS
-#ifndef _HIP
-  nvmlShutdown();
-#else
-  rsmi_shut_down();
-#endif
+  monitor.shutdown();
 #endif
 
   return 0;
