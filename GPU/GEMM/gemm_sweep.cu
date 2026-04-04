@@ -319,7 +319,7 @@ int main(int argc, char **argv)
         RSMI_POWER_TYPE power_type;
         rsmi_frequencies_t freqs;
         int64_t temp_mC;
-        rsmi_activity_metric_counter_t activity;
+        uint32_t busy_pct;
         if (rsmi_dev_power_get(rsmi_dev_idx, &power_uW, &power_type) == RSMI_STATUS_SUCCESS)
           totalPower += (double)power_uW / 1e6; // μW  -> W
         if (rsmi_dev_gpu_clk_freq_get(rsmi_dev_idx, RSMI_CLK_TYPE_SYS, &freqs) == RSMI_STATUS_SUCCESS)
@@ -327,13 +327,10 @@ int main(int argc, char **argv)
         if (rsmi_dev_temp_metric_get(rsmi_dev_idx, RSMI_TEMP_TYPE_JUNCTION,
                                      RSMI_TEMP_CURRENT, &temp_mC) == RSMI_STATUS_SUCCESS)
           totalTemp += temp_mC / 1000.0; // m°C -> °C
-        if (rsmi_dev_activity_metric_get(rsmi_dev_idx,
-                                         (rsmi_activity_metric_t)(RSMI_ACTIVITY_GFX | RSMI_ACTIVITY_UMC),
-                                         &activity) == RSMI_STATUS_SUCCESS)
-        {
-          totalGpuUtil += activity.average_gfx_activity;
-          totalMemUtil += activity.average_umc_activity;
-        }
+        if (rsmi_dev_busy_percent_get(rsmi_dev_idx, &busy_pct) == RSMI_STATUS_SUCCESS)
+          totalGpuUtil += busy_pct;
+        if (rsmi_dev_memory_busy_percent_get(rsmi_dev_idx, &busy_pct) == RSMI_STATUS_SUCCESS)
+          totalMemUtil += busy_pct;
       }
 #endif
       monitor_samples++;
