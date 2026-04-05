@@ -3,3 +3,9 @@ gemm_sweep
 tp64_*
 fp32_*
 scaling_results
+
+.rocprofv3
+pass_1
+aquavan1
+*.sh
+*.yaml

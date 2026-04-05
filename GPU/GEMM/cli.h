@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 // ---------------------------------------------------------------------------
@@ -49,11 +50,17 @@
 // ---------------------------------------------------------------------------
 // Argument struct
 // ---------------------------------------------------------------------------
+typedef enum {
+    INIT_RANDOM   = 0,  // fill matrices with curand uniform random values
+    INIT_CONSTANT = 1   // fill matrices with a fixed constant value
+} InitMode;
+
 typedef struct {
-    int    device_id;       // GPU device index
-    size_t matrix_size;     // gemm: fixed size; gemm_sweep: max size of sweep
-    int    repeats;         // iterations per run (used when target_minutes == 0)
-    double target_minutes;  // >0: run for this many minutes; 0: use repeats
+    int      device_id;       // GPU device index
+    size_t   matrix_size;     // gemm: fixed size; gemm_sweep: max size of sweep
+    int      repeats;         // iterations per run (used when target_minutes == 0)
+    double   target_minutes;  // >0: run for this many minutes; 0: use repeats
+    InitMode init_mode;       // data initialisation: random or constant
 } GemmArgs;
 
 // ---------------------------------------------------------------------------
@@ -77,6 +84,7 @@ static void printHelp(const char *prog, int is_sweep)
     printf("  -t <double>     Target run duration in minutes per size\n"
            "                  0 = use -n (fixed repeats), >0 = time-based (default: %.1f)\n",
            DEFAULT_TARGET_MINUTES);
+    printf("  -i <mode>       Data initialisation mode: 'random' or 'constant' (default: random)\n");
     printf("\nExamples:\n");
     if (is_sweep) {
         printf("  %s -d 0 -s 32768 -n 100\n", prog);
@@ -97,11 +105,12 @@ static GemmArgs parseArguments(int argc, char **argv, int is_sweep)
     args.matrix_size    = is_sweep ? DEFAULT_SWEEPSIZE : DEFAULT_SIZE;
     args.repeats        = is_sweep ? DEFAULT_SWEEPNTIMES : DEFAULT_NTIMES;
     args.target_minutes = DEFAULT_TARGET_MINUTES;
+    args.init_mode      = INIT_RANDOM;
 
     int co;
     opterr = 0;
 
-    while ((co = getopt(argc, argv, "hd:s:n:t:")) != -1) {
+    while ((co = getopt(argc, argv, "hd:s:n:t:i:")) != -1) {
         switch (co) {
 
         case 'h':
@@ -151,6 +160,17 @@ static GemmArgs parseArguments(int argc, char **argv, int is_sweep)
             args.target_minutes = val;
             break;
         }
+
+        case 'i':
+            if (strcmp(optarg, "random") == 0) {
+                args.init_mode = INIT_RANDOM;
+            } else if (strcmp(optarg, "constant") == 0) {
+                args.init_mode = INIT_CONSTANT;
+            } else {
+                fprintf(stderr, "Invalid init mode for -i: '%s'. Use 'random' or 'constant'.\n", optarg);
+                exit(EXIT_FAILURE);
+            }
+            break;
 
         case '?':
             if (isprint(optopt))

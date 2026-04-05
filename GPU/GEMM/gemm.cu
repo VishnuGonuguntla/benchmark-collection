@@ -67,10 +67,10 @@ inline void checkCublas(cublasStatus_t result)
 // ---------------------------------------------------------------------------
 // Kernel: Initialize matrices with random values
 // ---------------------------------------------------------------------------
-__global__ void init_data(GEMM_FLOAT *A, GEMM_FLOAT *B, GEMM_FLOAT *C, int size, unsigned long long seed)
+__global__ void init_data(GEMM_FLOAT *A, GEMM_FLOAT *B, GEMM_FLOAT *C, size_t size, unsigned long long seed)
 {
-  long idx   = blockIdx.x * blockDim.x + threadIdx.x;
-  long total = (long)size * (long)size;
+  size_t idx   = (size_t)blockIdx.x * (size_t)blockDim.x + (size_t)threadIdx.x;
+  size_t total = size * size;
   if (idx >= total) return;
 
   curandState state;
@@ -81,17 +81,32 @@ __global__ void init_data(GEMM_FLOAT *A, GEMM_FLOAT *B, GEMM_FLOAT *C, int size,
 }
 
 // ---------------------------------------------------------------------------
+// Kernel: Initialize matrices with a fixed constant value
+// ---------------------------------------------------------------------------
+__global__ void init_data_constant(GEMM_FLOAT *A, GEMM_FLOAT *B, GEMM_FLOAT *C, size_t size)
+{
+  size_t idx   = (size_t)blockIdx.x * (size_t)blockDim.x + (size_t)threadIdx.x;
+  size_t total = size * size;
+  if (idx >= total) return;
+
+  A[idx] = (GEMM_FLOAT)0.1529;
+  B[idx] = (GEMM_FLOAT)1.2631;
+  C[idx] = (GEMM_FLOAT)0.0;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
   GemmArgs args = parseArguments(argc, argv, 0 /* not sweep */);
 
-  int    device_id        = args.device_id;
-  int    gpu_id           = device_id; // GPU ID in BDF order (matches amd-smi)
-  size_t matrix_dimension = args.matrix_size;
-  int    repeats          = args.repeats;
-  double target_minutes   = args.target_minutes;
+  int      device_id        = args.device_id;
+  int      gpu_id           = device_id; // GPU ID in BDF order (matches amd-smi)
+  size_t   matrix_dimension = args.matrix_size;
+  int      repeats          = args.repeats;
+  double   target_minutes   = args.target_minutes;
+  InitMode init_mode        = args.init_mode;
 
 #ifdef _HIP
   // On AMD, GPU ID (BDF order, as shown by amd-smi) differs from HIP device index.
@@ -155,6 +170,7 @@ int main(int argc, char **argv)
     cout << "Mode: time-based (" << target_minutes << " min)" << endl;
   else
     cout << "Repeats: " << repeats << endl;
+  cout << "Init mode: " << (init_mode == INIT_RANDOM ? "random" : "constant") << endl;
   cout << HLINE;
 
   cublasHandle_t handle;
@@ -184,7 +200,10 @@ int main(int argc, char **argv)
 
   long threads = 256;
   long blocks  = ((long)matrix_dimension * (long)matrix_dimension) / threads;
-  init_data<<<blocks, threads>>>(d_A, d_B, d_C, matrix_dimension, (unsigned long long)time(NULL));
+  if (init_mode == INIT_RANDOM)
+    init_data<<<blocks, threads>>>(d_A, d_B, d_C, matrix_dimension, (unsigned long long)time(NULL));
+  else
+    init_data_constant<<<blocks, threads>>>(d_A, d_B, d_C, matrix_dimension);
   checkCuda(cudaDeviceSynchronize());
 
 #ifdef DOUBLE
@@ -219,17 +238,17 @@ int main(int argc, char **argv)
       if (actual_repeats >= repeats) break;
     }
 
-    int m = matrix_dimension, n = matrix_dimension, k = matrix_dimension;
-    int lda = m, ldb = k, ldc = m;
+    int64_t m = matrix_dimension, n = matrix_dimension, k = matrix_dimension;
+    int64_t lda = m, ldb = k, ldc = m;
 
     checkCuda(cudaEventRecord(ev_start, 0));
 
 #ifdef DOUBLE
     cublasStatus_t stat = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                      m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc);
+                                         m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc);
 #else
     cublasStatus_t stat = cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
-                                      m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc);
+                                         m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc);
 #endif
 
     checkCuda(cudaEventRecord(ev_stop, 0));

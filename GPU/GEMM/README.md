@@ -9,7 +9,7 @@ A simple and repeatable benchmark for validating GPU performance based on cuBLAS
 | `gemm.cu` | GEMM for a single fixed matrix size |
 | `gemm_sweep.cu` | GEMM swept across a range of matrix sizes |
 | `portability.h` | HIP/CUDA portability layer (maps cuBLAS → hipBLAS, etc.) |
-| `cli.h` | CLI argument parser (`-d`, `-s`, `-n`, `-t`, `-h`) |
+| `cli.h` | CLI argument parser (`-d`, `-s`, `-n`, `-t`, `-i`, `-h`) |
 | `config.mk` | User-facing build configuration |
 | `Makefile` | Build rules |
 | `mk/` | Per-GPU architecture flags and default problem sizes |
@@ -70,6 +70,7 @@ Both `gemm` and `gemm_sweep` accept the same CLI flags:
 | `-s <int>` | Matrix size (`gemm`) or max sweep size (`gemm_sweep`) | from `config.mk` |
 | `-n <int>` | Number of iterations (used when `-t 0`) | from `config.mk` |
 | `-t <double>` | Target duration in minutes; `0` = use `-n` | `0` |
+| `-i <mode>` | Data initialisation: `random` (curand uniform) or `constant` (A=0.1529, B=1.2631, C=0) | `random` |
 
 The compile-time defines (`-DSIZE`, `-DNTIMES`, etc. from the `mk/` files) become the defaults for the respective flags, so CLI args always override them without recompiling.
 
@@ -87,6 +88,10 @@ The compile-time defines (`-DSIZE`, `-DNTIMES`, etc. from the `mk/` files) becom
 
 # Sweep, time-based (1 minute per matrix size)
 ./gemm_sweep -d 0 -t 1.0
+
+# Use constant initialisation instead of random
+./gemm -d 0 -s 16384 -n 500 -i constant
+./gemm_sweep -d 0 -t 1.0 -i constant
 ```
 
 ## Output format

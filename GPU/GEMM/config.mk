@@ -12,7 +12,7 @@ GPU ?= MI300X
 #   DP — double precision  (cublasDgemm / hipblasDgemm)
 #   SP — single precision  (cublasSgemm / hipblasSgemm)
 # ---------------------------------------------------------------------------
-PRECISION ?= DP
+PRECISION ?= SP
 
 # ---------------------------------------------------------------------------
 # Optional: compile-time default for the -t runtime flag (minutes).
