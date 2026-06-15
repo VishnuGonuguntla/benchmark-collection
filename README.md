@@ -1,4 +1,4 @@
-# NHR benchmarking suite
+# NHR@FAU benchmarking suite
 
 A collection of handpicked benchmarks aimed at continuous regression stress testing. Each benchmark is associated with a component within 1 HPC node. The goal is to apply as much stress possible as one can on the associated component.
 
