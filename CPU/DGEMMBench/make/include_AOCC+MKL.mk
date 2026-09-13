@@ -1,4 +1,3 @@
-
 ENV_CC ?= clang
 ENV_CFLAGS ?= -O3  
 ENV_INCDIRS ?= -I$(MKLROOT)/include

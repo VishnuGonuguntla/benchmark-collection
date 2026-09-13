@@ -110,6 +110,66 @@ __global__ void init_data_constant(GEMM_FLOAT *A, GEMM_FLOAT *B, GEMM_FLOAT *C, 
   C[idx] = (GEMM_FLOAT)0.0;
 }
 
+#include <cuda_runtime.h>
+
+#define TILE_SIZE 16
+
+__global__ void gemm_kernel(int M, int N, int K, 
+                            float alpha, const GEMM_FLOAT *A, 
+                            const GEMM_FLOAT *B, float beta, GEMM_FLOAT *C) {
+    // 1D Thread and Block coordinates
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
+    
+    // Global row and column index in the flattened 1D C matrix
+    int row = blockIdx.y * TILE_SIZE + ty;
+    int col = blockIdx.x * TILE_SIZE + tx;
+
+    // Allocate shared memory as flat 1D arrays
+    __shared__ GEMM_FLOAT sA[TILE_SIZE * TILE_SIZE];
+    __shared__ GEMM_FLOAT sB[TILE_SIZE * TILE_SIZE];
+
+    float sum = 0.0f;
+
+    // Loop over tiles of the inputs
+    int numTiles = (K + TILE_SIZE - 1) / TILE_SIZE;
+    for (int t = 0; t < numTiles; ++t) {
+        
+        // Load A into 1D shared memory
+        // 1D Shared Memory Index: ty * TILE_SIZE + tx
+        // 1D Global Memory Index: row * K + (t * TILE_SIZE + tx)
+        if (row < M && (t * TILE_SIZE + tx) < K) {
+            sA[ty * TILE_SIZE + tx] = A[row * K + (t * TILE_SIZE + tx)];
+        } else {
+            sA[ty * TILE_SIZE + tx] = 0.0f;
+        }
+
+        // Load B into 1D shared memory
+        // 1D Global Memory Index: (t * TILE_SIZE + ty) * N + col
+        if ((t * TILE_SIZE + ty) < K && col < N) {
+            sB[ty * TILE_SIZE + tx] = B[(t * TILE_SIZE + ty) * N + col];
+        } else {
+            sB[ty * TILE_SIZE + tx] = 0.0f;
+        }
+
+        __syncthreads();
+
+        // Perform the dot product using purely 1D indexing
+        for (int i = 0; i < TILE_SIZE; ++i) {
+            // sA accesses row 'ty' and column 'i' -> ty * TILE_SIZE + i
+            // sB accesses row 'i' and column 'tx' -> i * TILE_SIZE + tx
+            sum += sA[ty * TILE_SIZE + i] * sB[i * TILE_SIZE + tx];
+        }
+
+        __syncthreads();
+    }
+
+    // Write final output to 1D global memory array C
+    if (row < M && col < N) {
+        C[row * N + col] = alpha * sum + beta * C[row * N + col];
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -187,7 +247,12 @@ int main(int argc, char **argv)
   else
     cout << "Repeats per size: " << repeats << endl;
   cout << "Init mode: " << (init_mode == INIT_RANDOM ? "random" : "constant") << endl;
-
+#ifdef NAIVE
+    cout << "Optimization: " << "NAIVE"  << endl;
+#endif
+#ifdef VENDOR
+    cout << "Optimization: " << "VENDOR"  << endl;
+#endif
   cout << HLINE;
 
   cublasHandle_t handle;
@@ -270,6 +335,7 @@ int main(int argc, char **argv)
 
       checkCuda(cudaEventRecord(ev_start, 0));
 
+#ifdef VENDOR
 #ifdef DOUBLE
       cublasStatus_t stat = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
                                            m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc);
@@ -277,11 +343,24 @@ int main(int argc, char **argv)
       cublasStatus_t stat = cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N,
                                            m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc);
 #endif
+#endif
+
+#ifdef NAIVE
+    dim3 threadsPerBlock(TILE_SIZE, TILE_SIZE);
+    
+    // Calculate how many blocks we need in the grid. 
+    // Adding (TILE_SIZE - 1) ensures we round up if dimensions aren't perfect multiples of 16.
+    dim3 blocksPerGrid((n + TILE_SIZE - 1) / TILE_SIZE, 
+                       (m + TILE_SIZE - 1) / TILE_SIZE);
+    gemm_kernel<<<blocksPerGrid, threadsPerBlock>>>(m, n, k, *alpha, d_A, d_B, *beta, d_C);
+#endif
 
       checkCuda(cudaEventRecord(ev_stop, 0));
       checkCuda(cudaEventSynchronize(ev_stop));
 
+#ifdef VENDOR
       assert(stat == CUBLAS_STATUS_SUCCESS);
+#endif
       assert(!cudaGetLastError());
 
       float elapsed_ms;
