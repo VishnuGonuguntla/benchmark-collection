@@ -1,4 +1,3 @@
-
 include config.mk
 
 CC = $(ENV_CC)
@@ -8,13 +7,19 @@ ENV_BIN_SUFFIX = $(shell echo "$(ENV)" | tr '[:upper:]' '[:lower:]')
 ifeq ($(BUILD_VERBOSE),0)
 Q = @
 endif
+ifeq ($(PRECISION), DP)
+  CC_FLAGS += -DDOUBLE
+endif
 
-all: dgemm_bench_$(ENV_BIN_SUFFIX) dgemm_bench_$(ENV_BIN_SUFFIX).sh
+
+all: dgemm_bench_$(ENV_BIN_SUFFIX) dgemm_bench_$(ENV_BIN_SUFFIX).sh gemm_sweep_$(ENV_BIN_SUFFIX)
 
 dgemm_bench_$(ENV_BIN_SUFFIX): src/dgemm_bench.c
 	$(Q)make/test_modules.sh $(ENV_MODULES)
 	$(Q)$(CC) $(CFLAGS) src/dgemm_bench.c -o $@ $(LIBS)
-
+gemm_sweep_$(ENV_BIN_SUFFIX): src/gemm_sweep.c
+	$(Q)make/test_modules.sh $(ENV_MODULES)
+	$(Q)$(CC) $(CFLAGS) src/gemm_sweep.c -o $@ $(LIBS)
 dgemm_bench_$(ENV_BIN_SUFFIX).sh: make/run_template.sh
 	$(Q)sed -e "s#ENV_LOAD_MODULES=.*#ENV_LOAD_MODULES=\'$(ENV_MODULES)\'#g" \
 	    -e "s#ENV_PRERUN_CMD=.*#ENV_PRERUN_CMD=\'$(ENV_PRERUN_CMD)\'#g" \
@@ -31,6 +36,7 @@ test_modules:
 .PHONY: clean distclean
 clean:
 	$(Q)$(RM) dgemm_bench_$(ENV_BIN_SUFFIX)
+	$(Q)$(RM) gemm_sweep_$(ENV_BIN_SUFFIX)
 	$(Q)$(RM) dgemm_bench_$(ENV_BIN_SUFFIX).sh
 
 distclean:

@@ -22,6 +22,12 @@ ifeq ($(PRECISION), DP)
   CC_FLAGS += -DDOUBLE
 endif
 
+ifeq ($(OPTIMIZATION), NAIVE)
+  CC_FLAGS += -DNAIVE
+else
+  CC_FLAGS += -DVENDOR
+endif
+
 CC_FLAGS += -O3 --std=c++17 $(CUDA_ARCH_FLAGS) $(OPTIONS)
 
 EXE       = gemm

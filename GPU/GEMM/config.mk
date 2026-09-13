@@ -13,6 +13,7 @@ GPU ?= MI300X
 #   SP — single precision  (cublasSgemm / hipblasSgemm)
 # ---------------------------------------------------------------------------
 PRECISION ?= SP
+OPTIMIZATION ?= NAIVE
 
 # ---------------------------------------------------------------------------
 # Optional: compile-time default for the -t runtime flag (minutes).
