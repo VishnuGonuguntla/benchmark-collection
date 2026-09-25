@@ -1,13 +1,11 @@
 #include "portability.h" // HIP/CUDA portability + backend metric headers
 #include "cli.h"         // CLI argument parsing
 #include "metrics.h"     // GPU telemetry monitoring
-
+#include "util.cuh"
 #include <iostream>
 #include <stdlib.h>
 #include <assert.h>
 #include <chrono> // Wall-clock timing for time-based execution
-
-using namespace std;
 
 // Select precision via -DDOUBLE (double precision) or default (single precision)
 #ifdef DOUBLE
@@ -17,164 +15,12 @@ typedef float GEMM_FLOAT;
 #endif
 
 // ---------------------------------------------------------------------------
-// Error handling — void return avoids HIP [[nodiscard]] warnings on callers.
-// ---------------------------------------------------------------------------
-const char *cublasGetErrorString(cublasStatus_t status)
-{
-  switch (status)
-  {
-#ifdef _HIP
-  // Only codes guaranteed to exist in all hipBLAS versions (ROCm >= 6 removed
-  // HIPBLAS_STATUS_ARCH_MISMATCH and HIPBLAS_STATUS_MAPPING_ERROR).
-  case HIPBLAS_STATUS_SUCCESS:
-    return "HIPBLAS_STATUS_SUCCESS";
-  case HIPBLAS_STATUS_NOT_INITIALIZED:
-    return "HIPBLAS_STATUS_NOT_INITIALIZED";
-  case HIPBLAS_STATUS_ALLOC_FAILED:
-    return "HIPBLAS_STATUS_ALLOC_FAILED";
-  case HIPBLAS_STATUS_INVALID_VALUE:
-    return "HIPBLAS_STATUS_INVALID_VALUE";
-  case HIPBLAS_STATUS_EXECUTION_FAILED:
-    return "HIPBLAS_STATUS_EXECUTION_FAILED";
-  case HIPBLAS_STATUS_INTERNAL_ERROR:
-    return "HIPBLAS_STATUS_INTERNAL_ERROR";
-#else
-  case CUBLAS_STATUS_SUCCESS:
-    return "CUBLAS_STATUS_SUCCESS";
-  case CUBLAS_STATUS_NOT_INITIALIZED:
-    return "CUBLAS_STATUS_NOT_INITIALIZED";
-  case CUBLAS_STATUS_ALLOC_FAILED:
-    return "CUBLAS_STATUS_ALLOC_FAILED";
-  case CUBLAS_STATUS_INVALID_VALUE:
-    return "CUBLAS_STATUS_INVALID_VALUE";
-  case CUBLAS_STATUS_ARCH_MISMATCH:
-    return "CUBLAS_STATUS_ARCH_MISMATCH";
-  case CUBLAS_STATUS_MAPPING_ERROR:
-    return "CUBLAS_STATUS_MAPPING_ERROR";
-  case CUBLAS_STATUS_EXECUTION_FAILED:
-    return "CUBLAS_STATUS_EXECUTION_FAILED";
-  case CUBLAS_STATUS_INTERNAL_ERROR:
-    return "CUBLAS_STATUS_INTERNAL_ERROR";
-#endif
-  }
-  return "unknown error";
-}
-
-inline void checkCuda(cudaError_t result)
-{
-  if (result != cudaSuccess)
-  {
-    fprintf(stderr, "GPU Runtime Error: %s\n", cudaGetErrorString(result));
-    assert(result == cudaSuccess);
-  }
-}
-
-inline void checkCublas(cublasStatus_t result)
-{
-  if (result != CUBLAS_STATUS_SUCCESS)
-  {
-    fprintf(stderr, "BLAS Error: %s\n", cublasGetErrorString(result));
-    assert(result == CUBLAS_STATUS_SUCCESS);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Kernel: Initialize matrices with random values
-// ---------------------------------------------------------------------------
-__global__ void init_data(GEMM_FLOAT *A, GEMM_FLOAT *B, GEMM_FLOAT *C, size_t size, unsigned long long seed)
-{
-  long idx = blockIdx.x * blockDim.x + threadIdx.x;
-  long total = (long)size * (long)size;
-  if (idx >= total)
-    return;
-
-  curandState state;
-  curand_init(seed, idx, 0, &state);
-  A[idx] = (GEMM_FLOAT)curand_uniform(&state);
-  B[idx] = (GEMM_FLOAT)curand_uniform(&state);
-  C[idx] = (GEMM_FLOAT)curand_uniform(&state);
-}
-
-// ---------------------------------------------------------------------------
-// Kernel: Initialize matrices with a fixed constant value
-// ---------------------------------------------------------------------------
-__global__ void init_data_constant(GEMM_FLOAT *A, GEMM_FLOAT *B, GEMM_FLOAT *C, size_t size)
-{
-  long idx = blockIdx.x * blockDim.x + threadIdx.x;
-  long total = (long)size * (long)size;
-  if (idx >= total)
-    return;
-
-  A[idx] = (GEMM_FLOAT)0.1529;
-  B[idx] = (GEMM_FLOAT)1.2631;
-  C[idx] = (GEMM_FLOAT)0.0;
-}
-
-#include <cuda_runtime.h>
-
-#define TILE_SIZE 16
-
-__global__ void gemm_kernel(int M, int N, int K, 
-                            float alpha, const GEMM_FLOAT *A, 
-                            const GEMM_FLOAT *B, float beta, GEMM_FLOAT *C) {
-    // 1D Thread and Block coordinates
-    int tx = threadIdx.x;
-    int ty = threadIdx.y;
-    
-    // Global row and column index in the flattened 1D C matrix
-    int row = blockIdx.y * TILE_SIZE + ty;
-    int col = blockIdx.x * TILE_SIZE + tx;
-
-    // Allocate shared memory as flat 1D arrays
-    __shared__ GEMM_FLOAT sA[TILE_SIZE * TILE_SIZE];
-    __shared__ GEMM_FLOAT sB[TILE_SIZE * TILE_SIZE];
-
-    float sum = 0.0f;
-
-    // Loop over tiles of the inputs
-    int numTiles = (K + TILE_SIZE - 1) / TILE_SIZE;
-    for (int t = 0; t < numTiles; ++t) {
-        
-        // Load A into 1D shared memory
-        // 1D Shared Memory Index: ty * TILE_SIZE + tx
-        // 1D Global Memory Index: row * K + (t * TILE_SIZE + tx)
-        if (row < M && (t * TILE_SIZE + tx) < K) {
-            sA[ty * TILE_SIZE + tx] = A[row * K + (t * TILE_SIZE + tx)];
-        } else {
-            sA[ty * TILE_SIZE + tx] = 0.0f;
-        }
-
-        // Load B into 1D shared memory
-        // 1D Global Memory Index: (t * TILE_SIZE + ty) * N + col
-        if ((t * TILE_SIZE + ty) < K && col < N) {
-            sB[ty * TILE_SIZE + tx] = B[(t * TILE_SIZE + ty) * N + col];
-        } else {
-            sB[ty * TILE_SIZE + tx] = 0.0f;
-        }
-
-        __syncthreads();
-
-        // Perform the dot product using purely 1D indexing
-        for (int i = 0; i < TILE_SIZE; ++i) {
-            // sA accesses row 'ty' and column 'i' -> ty * TILE_SIZE + i
-            // sB accesses row 'i' and column 'tx' -> i * TILE_SIZE + tx
-            sum += sA[ty * TILE_SIZE + i] * sB[i * TILE_SIZE + tx];
-        }
-
-        __syncthreads();
-    }
-
-    // Write final output to 1D global memory array C
-    if (row < M && col < N) {
-        C[row * N + col] = alpha * sum + beta * C[row * N + col];
-    }
-}
-
-// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
+  using namespace std;
+
   GemmArgs args = parseArguments(argc, argv, 1 /* is_sweep */);
 
   int device_id = args.device_id;
@@ -282,7 +128,9 @@ int main(int argc, char **argv)
   cudaEvent_t ev_start, ev_stop;
   checkCuda(cudaEventCreate(&ev_start));
   checkCuda(cudaEventCreate(&ev_stop));
-
+  print_horizantal_line();
+  print_stats_header();
+  print_horizantal_line();
   // ---------------------------------------------------------------------------
   // Sweep over matrix sizes
   // ---------------------------------------------------------------------------
@@ -380,31 +228,18 @@ int main(int argc, char **argv)
     if (actual_repeats == 0)
       actual_repeats = 1;
 
-    double totalFlops = 2.0 * size * size * size * actual_repeats;
-
-    // --- Print results for this size ---
 #ifdef METRICS
     MetricsAvg avg = monitor.averages();
-    cout << "size " << size
-         << " | Time: " << sum << " s"
-         << " | Repeats: " << actual_repeats
-         << " | Perf: " << totalFlops / sum / 1e12 << " TFlop/s"
-         << " | Avg Power: " << avg.power << " W"
-         << " | Avg Clock: " << avg.clock << " MHz"
-         << " | Avg Temp: " << avg.temp << " C"
-         << " | " << GpuMonitor::util_label() << ": " << avg.gpu_util << " %"
-         << " | Mem Util: " << avg.mem_util << " %" << endl;
+    print_stats(size, sum, actual_repeats, avg);
 #else
-    cout << "size " << size
-         << " | Time: " << sum << " s"
-         << " | Repeats: " << actual_repeats
-         << " | Perf: " << totalFlops / sum / 1e12 << " TFlop/s" << endl;
+    print_stats(size, sum, actual_repeats);
 #endif
   }
 
 #ifdef METRICS
   monitor.shutdown();
 #endif
+  print_horizantal_line();
 
   return 0;
 }

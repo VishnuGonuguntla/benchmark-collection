@@ -2,6 +2,7 @@
 _HIP = 1
 
 CUDA_ARCH_FLAGS ?= --offload-arch=gfx942 -Wno-switch
+INCLUDES  = -I/opt/rocm-7.2.4/include/hiprand
 
 OPTIONS  =  -D_HIP
 OPTIONS +=  -DSIZE=37632

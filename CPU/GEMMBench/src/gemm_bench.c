@@ -167,12 +167,6 @@ int main(int argc, char* argv[]) {
     print_horizontal_line();
     print_stats(dbl_N, runtime, options.repeat, fp_ops);
 
-    // printf("size : %f\n", dbl_N);
-    // printf("Per DGEMM FP ops : %f\n", (dbl_N * dbl_N * dbl_N * 2.0) + (dbl_N * dbl_N  * 2.0));
-    // printf("Per DGEMM Runtime : %f\n", runtime / options.repeat);
-    // printf("Total FP ops : %f\n", fp_ops);
-    // printf("Total Runtime : %f\n", runtime);
-    // printf("FP rate : %f MFLOPS/s |\n", 1E-6*(fp_ops/runtime));
     print_horizontal_line();
 
     if (options.debug) printf("--- Cleanup 3 matrices\n");

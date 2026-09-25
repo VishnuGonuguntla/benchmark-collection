@@ -28,7 +28,7 @@ else
   CC_FLAGS += -DVENDOR
 endif
 
-CC_FLAGS += -O3 --std=c++17 $(CUDA_ARCH_FLAGS) $(OPTIONS)
+CC_FLAGS += -O3 --std=c++17 $(CUDA_ARCH_FLAGS) $(OPTIONS) $(INCLUDES)
 
 EXE       = gemm
 EXE_SWEEP = gemm_sweep
