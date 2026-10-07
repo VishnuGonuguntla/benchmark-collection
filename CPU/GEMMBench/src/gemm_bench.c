@@ -9,26 +9,9 @@
 #include "cli.h"
 #include "timing.h"
 
-#ifdef DGEMM_BENCH_WITH_MKL
-#include "mkl.h"
-#endif
-
-#if defined(DGEMM_BENCH_WITH_CBLAS) || defined(DGEMM_BENCH_WITH_OPENBLAS)
-#include "cblas.h"
-#endif
-
-#if defined(DGEMM_BENCH_WITH_AOCL)
-#include "blis.h"
-#endif
-
-#ifdef DOUBLE
-#define DGEMM_BENCH_DATATYPE double
-#else
-#define DGEMM_BENCH_DATATYPE float
-#endif
-
-
-#define DGEMM_IDX(i, j, N) ((i) * (N) + (j))
+// The library variant (MKL / AOCL-BLIS / OpenBLAS / CBLAS) is selected at link
+// time; util.h resolves the headers, DGEMM_BENCH_WITH_BLAS and the variant
+// name from the define that mk/include_<library>.mk provides.
 
 #ifndef _OPENMP
 int omp_get_max_threads(void)
@@ -65,12 +48,12 @@ int main(int argc, char* argv[]) {
 #else
     printf("Precision: SINGLE\n");
 #endif
-#if defined(DGEMM_BENCH_WITH_MKL) || defined(DGEMM_BENCH_WITH_CBLAS) || defined(DGEMM_BENCH_WITH_AOCL)
-    printf("Optimization: MKL | CBLAS\n");
+#ifdef DGEMM_BENCH_WITH_BLAS
+    printf("Optimization: %s\n", DGEMM_BENCH_VARIANT);
 #else
-#if defined _OPENMP
+#  if defined _OPENMP
     printf("Optimization: NAIVE\n");
-#endif
+#  endif
 #endif
 
     printf("Options: repeat %d alpha %f beta %f num_threads %d debug %d\n", options.repeat, options.alpha, options.beta, options.num_threads, options.debug);
@@ -115,9 +98,9 @@ int main(int argc, char* argv[]) {
     double starttime = timestamp();
     for(int r = 0; r < options.repeat; r++) {
         if (options.debug) printf(".");
-#if defined(DGEMM_BENCH_WITH_MKL) || defined(DGEMM_BENCH_WITH_CBLAS) || defined(DGEMM_BENCH_WITH_AOCL)
+#ifdef DGEMM_BENCH_WITH_BLAS
 
-#ifdef double
+#ifdef DOUBLE
         cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                 options.N, options.N, options.N, options.alpha, A, options.N, B, options.N, options.beta, C, options.N);
 #else

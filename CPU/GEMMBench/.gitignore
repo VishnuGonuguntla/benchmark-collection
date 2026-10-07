@@ -1,0 +1,5 @@
+# build artifacts — ladder binaries (gemm_bench_<toolchain>_ladder etc.)
+gemm_bench_*
+gemm_sweep_*
+*.o
+obj/

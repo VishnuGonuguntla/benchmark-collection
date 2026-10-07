@@ -13,6 +13,44 @@
 #define DGEMM_BENCH_DATATYPE float
 #endif
 
+// ---------------------------------------------------------------------------
+// Legacy builds choose the BLAS at LINK time: mk/include_<library>.mk defines
+// one of DGEMM_BENCH_WITH_{MKL,AOCL,OPENBLAS,CBLAS}.  MKL, AOCL-BLIS and
+// OpenBLAS all export the same cblas_<s,d>gemm entry points, so one switch
+// drives every library call and the variant name printed in the header.
+// (The ladder build does not use any of this: it dlopen's its libraries —
+// see src/library.h.)
+// ---------------------------------------------------------------------------
+#ifdef DGEMM_BENCH_WITH_MKL
+#  include "mkl.h"
+#  define DGEMM_BENCH_VARIANT "MKL"
+#endif
+
+#ifdef DGEMM_BENCH_WITH_AOCL
+#  include "blis.h"
+#  define DGEMM_BENCH_VARIANT "AOCL-BLIS"
+#endif
+
+#ifdef DGEMM_BENCH_WITH_OPENBLAS
+#  define DGEMM_BENCH_VARIANT "OpenBLAS"
+#endif
+
+#ifdef DGEMM_BENCH_WITH_CBLAS
+#  ifndef DGEMM_BENCH_VARIANT
+#    define DGEMM_BENCH_VARIANT "CBLAS"
+#  endif
+#endif
+
+#if defined(DGEMM_BENCH_WITH_CBLAS) || defined(DGEMM_BENCH_WITH_OPENBLAS) || \
+    defined(DGEMM_BENCH_WITH_AOCL)
+#  include "cblas.h"     // AOCL-BLIS ships the CBLAS interface next to blis.h
+#endif
+
+// any library variant that provides cblas_<s,d>gemm
+#if defined(DGEMM_BENCH_WITH_MKL) || defined(DGEMM_BENCH_WITH_CBLAS) || \
+    defined(DGEMM_BENCH_WITH_OPENBLAS) || defined(DGEMM_BENCH_WITH_AOCL)
+#  define DGEMM_BENCH_WITH_BLAS 1
+#endif
 
 int allocate_matrix(size_t N, DGEMM_BENCH_DATATYPE* DGEMM_BENCH_RESTRICT *  matrix)
 {

@@ -8,13 +8,9 @@
 #include "util.h"
 #include "timing.h"
 
-#ifdef DGEMM_BENCH_WITH_MKL
-#include "mkl.h"
-#endif
-
-#if defined(DGEMM_BENCH_WITH_CBLAS) || defined(DGEMM_BENCH_WITH_AOCL)
-#include "cblas.h"
-#endif
+// The library variant (MKL / AOCL-BLIS / OpenBLAS / CBLAS) is selected at link
+// time; util.h resolves the headers, DGEMM_BENCH_WITH_BLAS and the variant
+// name from the define that mk/include_<library>.mk provides.
 
 #ifndef _OPENMP
 int omp_get_max_threads(void)
@@ -52,8 +48,8 @@ int main(int argc, char* argv[]) {
 #else
     printf("Precision: SINGLE\n");
 #endif
-#if defined(DGEMM_BENCH_WITH_MKL) || defined(DGEMM_BENCH_WITH_CBLAS) || defined(DGEMM_BENCH_WITH_AOCL)
-    printf("Optimization: MKL | CBLAS\n");
+#ifdef DGEMM_BENCH_WITH_BLAS
+    printf("Optimization: %s\n", DGEMM_BENCH_VARIANT);
 #else
 #if defined _OPENMP
     printf("Optimization: NAIVE\n");
@@ -67,6 +63,7 @@ int main(int argc, char* argv[]) {
     printf("repeat %d alpha %f beta %f num_threads %d debug %d\n", options.repeat, options.alpha, options.beta, options.num_threads, options.debug);
 
     omp_set_num_threads(options.num_threads);
+    print_horizontal_line();
     print_column_title();
     print_horizontal_line();
     for (size_t size = 1000; size <= matrix_dimension; size = (size_t)(size * 1.2))
@@ -109,9 +106,9 @@ int main(int argc, char* argv[]) {
         double starttime = timestamp();
         for(int r = 0; r < options.repeat; r++) {
             if (options.debug) printf(".");
-        #if defined(DGEMM_BENCH_WITH_MKL) || defined(DGEMM_BENCH_WITH_CBLAS) || defined(DGEMM_BENCH_WITH_AOCL)
+        #ifdef DGEMM_BENCH_WITH_BLAS
 
-#ifdef double
+#ifdef DOUBLE
             cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
                     size, size, size, options.alpha, A, size, B, size, options.beta, C, size);
 #else

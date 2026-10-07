@@ -1,4 +1,10 @@
-MKLROOT=/apps/spack/1.0.2/opt/linux-almalinux9-icelake/none-none/intel-oneapi-mkl-2024.2.2-qvjxvr2b5cebxqymrzkfopa2tr6c2g4m/mkl/2024.2
+# MKL location: the module's MKLROOT wins, then config.mk's MKL_PATH (shared
+# with the ladder's runtime-loaded rung), then the pinned install below so
+# past measurements on this cluster stay reproducible.
+ifeq ($(strip $(MKLROOT)),)
+  MKLROOT := $(if $(MKL_PATH),$(MKL_PATH),\
+    /apps/spack/1.0.2/opt/linux-almalinux9-icelake/none-none/intel-oneapi-mkl-2024.2.2-qvjxvr2b5cebxqymrzkfopa2tr6c2g4m/mkl/2024.2)
+endif
 
 ENV_INCDIRS ?= -I$(MKLROOT)/include
 ENV_DEFINES ?= -DDGEMM_BENCH_WITH_MKL
