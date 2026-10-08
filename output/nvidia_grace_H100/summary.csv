@@ -1,0 +1,50 @@
+proc,dtype,size,arch,cpu_name,l1d_bytes,l2_bytes,l3_bytes,gemm_best_gflops,gemm_best_level,gemm_v0_gflops,gemm_v2_gflops
+nvidia_grace_H100,FP32,100,nvidia_grace,nvidia_grace,58254,1048576,119537664,168.947949,V1 ikj row locality,126.72238,103.032232
+nvidia_grace_H100,FP32,120,nvidia_grace,nvidia_grace,58254,1048576,119537664,297.163371,V1 ikj row locality,162.38821,150.619305
+nvidia_grace_H100,FP32,144,nvidia_grace,nvidia_grace,58254,1048576,119537664,426.89034,V1 ikj row locality,206.676828,181.863354
+nvidia_grace_H100,FP32,172,nvidia_grace,nvidia_grace,58254,1048576,119537664,486.823361,V1 ikj row locality,208.888096,292.436743
+nvidia_grace_H100,FP32,207,nvidia_grace,nvidia_grace,58254,1048576,119537664,783.722722,V1 ikj row locality,226.408537,392.129594
+nvidia_grace_H100,FP32,248,nvidia_grace,nvidia_grace,58254,1048576,119537664,956.587326,V1 ikj row locality,220.089517,479.753908
+nvidia_grace_H100,FP32,298,nvidia_grace,nvidia_grace,58254,1048576,119537664,977.921214,V1 ikj row locality,206.079416,441.3108
+nvidia_grace_H100,FP32,358,nvidia_grace,nvidia_grace,58254,1048576,119537664,1068.739839,V1 ikj row locality,228.915135,516.38532
+nvidia_grace_H100,FP32,429,nvidia_grace,nvidia_grace,58254,1048576,119537664,1074.301535,V1 ikj row locality,236.109055,633.528451
+nvidia_grace_H100,FP32,515,nvidia_grace,nvidia_grace,58254,1048576,119537664,983.515596,V1 ikj row locality,185.777141,736.835203
+nvidia_grace_H100,FP32,619,nvidia_grace,nvidia_grace,58254,1048576,119537664,1031.078464,V1 ikj row locality,207.628806,704.402655
+nvidia_grace_H100,FP32,743,nvidia_grace,nvidia_grace,58254,1048576,119537664,991.261253,V1 ikj row locality,199.684446,849.807117
+nvidia_grace_H100,FP32,891,nvidia_grace,nvidia_grace,58254,1048576,119537664,996.859728,V5 + 2D tile grid,187.388193,703.731868
+nvidia_grace_H100,FP32,1069,nvidia_grace,nvidia_grace,58254,1048576,119537664,1057.833862,V5 + 2D tile grid,179.445558,992.162826
+nvidia_grace_H100,FP32,1283,nvidia_grace,nvidia_grace,58254,1048576,119537664,1202.589389,V5 + 2D tile grid,172.232373,1000.661793
+nvidia_grace_H100,FP32,1540,nvidia_grace,nvidia_grace,58254,1048576,119537664,1194.988152,V5 + 2D tile grid,179.961225,1058.897757
+nvidia_grace_H100,FP32,1848,nvidia_grace,nvidia_grace,58254,1048576,119537664,1258.584437,V5 + 2D tile grid,155.360244,1118.704746
+nvidia_grace_H100,FP32,2218,nvidia_grace,nvidia_grace,58254,1048576,119537664,1233.809756,V5 + 2D tile grid,140.694414,1191.036
+nvidia_grace_H100,FP32,2662,nvidia_grace,nvidia_grace,58254,1048576,119537664,1320.779251,V5 + 2D tile grid,114.329195,1196.02071
+nvidia_grace_H100,FP32,3194,nvidia_grace,nvidia_grace,58254,1048576,119537664,1301.558692,V5 + 2D tile grid,88.336395,1220.533589
+nvidia_grace_H100,FP32,3833,nvidia_grace,nvidia_grace,58254,1048576,119537664,1350.265214,V5 + 2D tile grid,60.765342,1264.335465
+nvidia_grace_H100,FP32,4600,nvidia_grace,nvidia_grace,58254,1048576,119537664,1395.996578,V5 + 2D tile grid,45.964067,1355.369188
+nvidia_grace_H100,FP32,5520,nvidia_grace,nvidia_grace,58254,1048576,119537664,1382.436541,V5 + 2D tile grid,38.524622,1319.360376
+nvidia_grace_H100,FP32,6624,nvidia_grace,nvidia_grace,58254,1048576,119537664,1451.270005,V5 + 2D tile grid,21.49786,1436.883057
+nvidia_grace_H100,FP32,7949,nvidia_grace,nvidia_grace,58254,1048576,119537664,1376.186091,V5 + 2D tile grid,12.175452,1299.386746
+nvidia_grace_H100,FP64,100,nvidia_grace,nvidia_grace,58254,1048576,119537664,163.141016,V1 ikj row locality,127.203546,145.947043
+nvidia_grace_H100,FP64,120,nvidia_grace,nvidia_grace,58254,1048576,119537664,256.874642,V1 ikj row locality,162.241586,166.879388
+nvidia_grace_H100,FP64,144,nvidia_grace,nvidia_grace,58254,1048576,119537664,352.91566,V1 ikj row locality,203.129539,340.054466
+nvidia_grace_H100,FP64,172,nvidia_grace,nvidia_grace,58254,1048576,119537664,496.216106,V2 blocked micro-kernel,193.952899,496.216106
+nvidia_grace_H100,FP64,207,nvidia_grace,nvidia_grace,58254,1048576,119537664,715.140365,V2 blocked micro-kernel,233.310225,715.140365
+nvidia_grace_H100,FP64,248,nvidia_grace,nvidia_grace,58254,1048576,119537664,605.424416,V5 + 2D tile grid,203.866813,544.142422
+nvidia_grace_H100,FP64,298,nvidia_grace,nvidia_grace,58254,1048576,119537664,594.335535,V5 + 2D tile grid,184.252658,457.374019
+nvidia_grace_H100,FP64,358,nvidia_grace,nvidia_grace,58254,1048576,119537664,643.612586,V5 + 2D tile grid,192.744794,497.761618
+nvidia_grace_H100,FP64,429,nvidia_grace,nvidia_grace,58254,1048576,119537664,697.291337,V5 + 2D tile grid,163.860333,643.479547
+nvidia_grace_H100,FP64,515,nvidia_grace,nvidia_grace,58254,1048576,119537664,638.166271,V5 + 2D tile grid,135.04339,563.542065
+nvidia_grace_H100,FP64,619,nvidia_grace,nvidia_grace,58254,1048576,119537664,717.452294,V5 + 2D tile grid,143.755457,575.926825
+nvidia_grace_H100,FP64,743,nvidia_grace,nvidia_grace,58254,1048576,119537664,696.7921,V5 + 2D tile grid,142.911016,689.828947
+nvidia_grace_H100,FP64,891,nvidia_grace,nvidia_grace,58254,1048576,119537664,715.258733,V5 + 2D tile grid,142.978032,617.701031
+nvidia_grace_H100,FP64,1069,nvidia_grace,nvidia_grace,58254,1048576,119537664,732.77779,V5 + 2D tile grid,144.251072,724.004318
+nvidia_grace_H100,FP64,1283,nvidia_grace,nvidia_grace,58254,1048576,119537664,733.219268,V5 + 2D tile grid,127.785018,687.758212
+nvidia_grace_H100,FP64,1540,nvidia_grace,nvidia_grace,58254,1048576,119537664,711.821582,V5 + 2D tile grid,149.761527,696.47616
+nvidia_grace_H100,FP64,1848,nvidia_grace,nvidia_grace,58254,1048576,119537664,744.84793,V5 + 2D tile grid,140.31503,718.452517
+nvidia_grace_H100,FP64,2218,nvidia_grace,nvidia_grace,58254,1048576,119537664,742.267826,V3 + NUMA first-touch,118.05149,740.404768
+nvidia_grace_H100,FP64,2662,nvidia_grace,nvidia_grace,58254,1048576,119537664,730.952841,V5 + 2D tile grid,82.100342,705.52603
+nvidia_grace_H100,FP64,3194,nvidia_grace,nvidia_grace,58254,1048576,119537664,736.233212,V5 + 2D tile grid,41.684691,698.670392
+nvidia_grace_H100,FP64,3833,nvidia_grace,nvidia_grace,58254,1048576,119537664,742.228702,V5 + 2D tile grid,19.024603,696.113166
+nvidia_grace_H100,FP64,4600,nvidia_grace,nvidia_grace,58254,1048576,119537664,736.817388,V5 + 2D tile grid,13.029995,708.442896
+nvidia_grace_H100,FP64,5520,nvidia_grace,nvidia_grace,58254,1048576,119537664,739.548005,V5 + 2D tile grid,11.774275,702.145711
+nvidia_grace_H100,FP64,6624,nvidia_grace,nvidia_grace,58254,1048576,119537664,755.522775,V5 + 2D tile grid,10.705776,710.829831

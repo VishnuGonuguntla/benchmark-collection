@@ -1,0 +1,295 @@
+proc,dtype,level,M,N,K,time_s,repeats,perf,footprint_bytes,cube,unit,source
+nvidia_grace_H100,FP32,V0 naive-omp ijk,100,100,100,0.000473,30,126.72238,120000,100,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,100,100,100,0.000355,30,168.947949,120000,100,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,100,100,100,0.000582,30,103.032232,120000,100,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,100,100,100,0.000581,30,103.208225,120000,100,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,100,100,100,0.000581,30,103.213723,120000,100,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,100,100,100,0.00044,30,136.511314,120000,100,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,120,120,120,0.000638,30,162.38821,172800,120,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,120,120,120,0.000349,30,297.163371,172800,120,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,120,120,120,0.000688,30,150.619305,172800,120,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,120,120,120,0.000681,30,152.189706,172800,120,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,120,120,120,0.000692,30,149.859723,172800,120,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,120,120,120,0.000503,30,205.999996,172800,120,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,144,144,144,0.000867,30,206.676828,248832,144,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,144,144,144,0.00042,30,426.89034,248832,144,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,144,144,144,0.000985,30,181.863354,248832,144,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,144,144,144,0.000811,30,221.02901,248832,144,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,144,144,144,0.000807,30,221.905336,248832,144,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,144,144,144,0.000475,30,376.786671,248832,144,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,172,172,172,0.001462,30,208.888096,355008,172,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,172,172,172,0.000627,30,486.823361,355008,172,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,172,172,172,0.001044,30,292.436743,355008,172,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,172,172,172,0.00105,30,290.770128,355008,172,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,172,172,172,0.001054,30,289.543832,355008,172,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,172,172,172,0.001001,30,305.030826,355008,172,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,207,207,207,0.002351,30,226.408537,514188,207,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,207,207,207,0.000679,30,783.722722,514188,207,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,207,207,207,0.001357,30,392.129594,514188,207,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,207,207,207,0.00151,30,352.336048,514188,207,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,207,207,207,0.001366,30,389.722353,514188,207,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,207,207,207,0.001254,30,424.553478,514188,207,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,248,248,248,0.004158,30,220.089517,738048,248,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,248,248,248,0.000957,30,956.587326,738048,248,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,248,248,248,0.001908,30,479.753908,738048,248,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,248,248,248,0.001792,30,510.634182,738048,248,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,248,248,248,0.001779,30,514.474133,738048,248,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,248,248,248,0.001553,30,589.283397,738048,248,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,298,298,298,0.007705,30,206.079416,1065648,298,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,298,298,298,0.001624,30,977.921214,1065648,298,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,298,298,298,0.003598,30,441.3108,1065648,298,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,298,298,298,0.003659,30,433.939164,1065648,298,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,298,298,298,0.003601,30,440.942159,1065648,298,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,298,298,298,0.002841,30,558.983888,1065648,298,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,358,358,358,0.012026,30,228.915135,1537968,358,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,358,358,358,0.002576,30,1068.739839,1537968,358,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,358,358,358,0.005331,30,516.38532,1537968,358,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,358,358,358,0.005471,30,503.183499,1537968,358,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,358,358,358,0.005294,30,520.059537,1537968,358,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,358,358,358,0.003952,30,696.570793,1537968,358,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,429,429,429,0.020064,30,236.109055,2208492,429,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,429,429,429,0.00441,30,1074.301535,2208492,429,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,429,429,429,0.007478,30,633.528451,2208492,429,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,429,429,429,0.007814,30,606.217914,2208492,429,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,429,429,429,0.00733,30,646.309766,2208492,429,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,429,429,429,0.00529,30,895.563098,2208492,429,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,515,515,515,0.044114,30,185.777141,3182700,515,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,515,515,515,0.008333,30,983.515596,3182700,515,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,515,515,515,0.011123,30,736.835203,3182700,515,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,515,515,515,0.01104,30,742.369215,3182700,515,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,515,515,515,0.011821,30,693.278742,3182700,515,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,515,515,515,0.009449,30,867.377932,3182700,515,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,619,619,619,0.068539,30,207.628806,4597932,619,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,619,619,619,0.013802,30,1031.078464,4597932,619,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,619,619,619,0.020202,30,704.402655,4597932,619,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,619,619,619,0.020128,30,707.004161,4597932,619,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,619,619,619,0.020053,30,709.64983,4597932,619,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,619,619,619,0.015927,30,893.464053,4597932,619,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,743,743,743,0.123246,30,199.684446,6624588,743,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,743,743,743,0.024827,30,991.261253,6624588,743,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,743,743,743,0.02896,30,849.807117,6624588,743,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,743,743,743,0.028603,30,860.402036,6624588,743,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,743,743,743,0.028691,30,857.762113,6624588,743,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,743,743,743,0.02681,30,917.960111,6624588,743,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,891,891,891,0.226486,30,187.388193,9526572,891,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,891,891,891,0.043461,30,976.535476,9526572,891,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,891,891,891,0.060308,30,703.731868,9526572,891,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,891,891,891,0.05084,30,834.800481,9526572,891,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,891,891,891,0.050797,30,835.492544,9526572,891,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,891,891,891,0.042575,30,996.859728,9526572,891,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,1069,1069,1069,0.408462,30,179.445558,13713132,1069,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,1069,1069,1069,0.074049,30,989.842361,13713132,1069,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,1069,1069,1069,0.073876,30,992.162826,13713132,1069,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,1069,1069,1069,0.073716,30,994.305122,13713132,1069,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,1069,1069,1069,0.073406,30,998.509165,13713132,1069,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,1069,1069,1069,0.069289,30,1057.833862,13713132,1069,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,1283,1283,1283,0.735727,30,172.232373,19753068,1283,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,1283,1283,1283,0.126783,30,999.473448,19753068,1283,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,1283,1283,1283,0.126632,30,1000.661793,19753068,1283,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,1283,1283,1283,0.126941,30,998.223497,19753068,1283,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,1283,1283,1283,0.126561,30,1001.220934,19753068,1283,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,1283,1283,1283,0.105369,30,1202.589389,19753068,1283,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,1540,1540,1540,1.217684,30,179.961225,28459200,1540,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,1540,1540,1540,0.220843,30,992.271851,28459200,1540,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,1540,1540,1540,0.206947,30,1058.897757,28459200,1540,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,1540,1540,1540,0.206949,30,1058.888423,28459200,1540,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,1540,1540,1540,0.207354,30,1056.820247,28459200,1540,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,1540,1540,1540,0.183379,30,1194.988152,28459200,1540,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,1848,1848,1848,2.437346,30,155.360244,40981248,1848,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,1848,1848,1848,0.386083,30,980.790997,40981248,1848,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,1848,1848,1848,0.338487,30,1118.704746,40981248,1848,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,1848,1848,1848,0.338828,30,1117.578671,40981248,1848,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,1848,1848,1848,0.338301,30,1119.318607,40981248,1848,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,1848,1848,1848,0.300867,30,1258.584437,40981248,1848,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,2218,2218,2218,4.653278,30,140.694414,59034288,2218,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,2218,2218,2218,0.678942,30,964.279553,59034288,2218,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,2218,2218,2218,0.549681,30,1191.036,59034288,2218,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,2218,2218,2218,0.55005,30,1190.238323,59034288,2218,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,2218,2218,2218,0.548828,30,1192.888595,59034288,2218,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,2218,2218,2218,0.530625,30,1233.809756,59034288,2218,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,2662,2662,2662,9.899614,30,114.329195,85034928,2662,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,2662,2662,2662,1.191807,30,949.663169,85034928,2662,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,2662,2662,2662,0.946317,30,1196.02071,85034928,2662,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,2662,2662,2662,0.94624,30,1196.117946,85034928,2662,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,2662,2662,2662,0.945628,30,1196.891744,85034928,2662,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,2662,2662,2662,0.85693,30,1320.779251,85034928,2662,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,3194,3194,3194,22.131779,30,88.336395,122419632,3194,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,3194,3194,3194,2.101199,30,930.441099,122419632,3194,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,3194,3194,3194,1.601792,30,1220.533589,122419632,3194,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,3194,3194,3194,1.601594,30,1220.685225,122419632,3194,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,3194,3194,3194,1.60305,30,1219.576286,122419632,3194,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,3194,3194,3194,1.502077,30,1301.558692,122419632,3194,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,3833,3833,3833,55.604733,30,60.765342,176302668,3833,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,3833,3833,3833,3.776771,30,894.637521,176302668,3833,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,3833,3833,3833,2.672424,30,1264.335465,176302668,3833,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,3833,3833,3833,2.671528,30,1264.759665,176302668,3833,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,3833,3833,3833,2.670453,30,1265.268594,176302668,3833,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,3833,3833,3833,2.502353,30,1350.265214,176302668,3833,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,4600,4600,4600,127.059253,30,45.964067,253920000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,4600,4600,4600,7.105107,30,821.966469,253920000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,4600,4600,4600,4.308907,30,1355.369188,253920000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,4600,4600,4600,4.311898,30,1354.428928,253920000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,4600,4600,4600,4.311358,30,1354.598774,253920000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,4600,4600,4600,4.183506,30,1395.996578,253920000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,5520,5520,5520,261.957055,30,38.524622,365644800,5520,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,5520,5520,5520,13.859047,30,728.173915,365644800,5520,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,5520,5520,5520,7.649007,30,1319.360376,365644800,5520,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,5520,5520,5520,7.639478,30,1321.006104,365644800,5520,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,5520,5520,5520,7.627406,30,1323.096838,365644800,5520,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,5520,5520,5520,7.300007,30,1382.436541,365644800,5520,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,6624,6624,6624,811.17956,30,21.49786,526528512,6624,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,6624,6624,6624,27.63048,30,631.137228,526528512,6624,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,6624,6624,6624,12.136426,30,1436.883057,526528512,6624,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,6624,6624,6624,12.160349,30,1434.056273,526528512,6624,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,6624,6624,6624,12.156357,30,1434.527171,526528512,6624,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,6624,6624,6624,12.016113,30,1451.270005,526528512,6624,GFlop/s,cpu
+nvidia_grace_H100,FP32,V0 naive-omp ijk,7949,7949,7949,2475.162119,30,12.175452,758239212,7949,GFlop/s,cpu
+nvidia_grace_H100,FP32,V1 ikj row locality,7949,7949,7949,52.663207,30,572.244247,758239212,7949,GFlop/s,cpu
+nvidia_grace_H100,FP32,V2 blocked micro-kernel,7949,7949,7949,23.192647,30,1299.386746,758239212,7949,GFlop/s,cpu
+nvidia_grace_H100,FP32,V3 + NUMA first-touch,7949,7949,7949,23.211884,30,1298.309827,758239212,7949,GFlop/s,cpu
+nvidia_grace_H100,FP32,V4 + B replication,7949,7949,7949,23.188233,30,1299.634078,758239212,7949,GFlop/s,cpu
+nvidia_grace_H100,FP32,V5 + 2D tile grid,7949,7949,7949,21.898359,30,1376.186091,758239212,7949,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,100,100,100,0.000472,30,127.203546,240000,100,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,100,100,100,0.000368,30,163.141016,240000,100,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,100,100,100,0.000411,30,145.947043,240000,100,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,100,100,100,0.000411,30,146.105918,240000,100,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,100,100,100,0.00042,30,142.757548,240000,100,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,100,100,100,0.000402,30,149.352915,240000,100,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,120,120,120,0.000639,30,162.241586,345600,120,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,120,120,120,0.000404,30,256.874642,345600,120,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,120,120,120,0.000621,30,166.879388,345600,120,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,120,120,120,0.000452,30,229.459217,345600,120,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,120,120,120,0.000456,30,227.222422,345600,120,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,120,120,120,0.000432,30,239.908341,345600,120,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,144,144,144,0.000882,30,203.129539,497664,144,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,144,144,144,0.000508,30,352.91566,497664,144,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,144,144,144,0.000527,30,340.054466,497664,144,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,144,144,144,0.000526,30,340.509443,497664,144,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,144,144,144,0.000746,30,240.265218,497664,144,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,144,144,144,0.000542,30,330.440769,497664,144,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,172,172,172,0.001574,30,193.952899,710016,172,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,172,172,172,0.000705,30,432.843293,710016,172,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,172,172,172,0.000615,30,496.216106,710016,172,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,172,172,172,0.00063,30,484.645645,710016,172,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,172,172,172,0.000619,30,493.290549,710016,172,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,172,172,172,0.000777,30,393.010763,710016,172,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,207,207,207,0.002281,30,233.310225,1028376,207,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,207,207,207,0.000961,30,554.020782,1028376,207,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,207,207,207,0.000744,30,715.140365,1028376,207,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,207,207,207,0.000761,30,699.498276,1028376,207,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,207,207,207,0.000752,30,707.262439,1028376,207,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,207,207,207,0.000977,30,544.479489,1028376,207,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,248,248,248,0.004489,30,203.866813,1476096,248,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,248,248,248,0.001766,30,518.229914,1476096,248,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,248,248,248,0.001682,30,544.142422,1476096,248,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,248,248,248,0.001679,30,544.992681,1476096,248,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,248,248,248,0.001634,30,560.172454,1476096,248,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,248,248,248,0.001512,30,605.424416,1476096,248,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,298,298,298,0.008618,30,184.252658,2131296,298,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,298,298,298,0.003175,30,500.15814,2131296,298,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,298,298,298,0.003472,30,457.374019,2131296,298,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,298,298,298,0.003494,30,454.462733,2131296,298,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,298,298,298,0.00345,30,460.190765,2131296,298,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,298,298,298,0.002672,30,594.335535,2131296,298,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,358,358,358,0.014283,30,192.744794,3075936,358,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,358,358,358,0.005288,30,520.596697,3075936,358,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,358,358,358,0.005531,30,497.761618,3075936,358,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,358,358,358,0.00508,30,541.902165,3075936,358,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,358,358,358,0.005575,30,493.781766,3075936,358,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,358,358,358,0.004277,30,643.612586,3075936,358,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,429,429,429,0.02891,30,163.860333,4416984,429,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,429,429,429,0.008937,30,530.092765,4416984,429,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,429,429,429,0.007362,30,643.479547,4416984,429,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,429,429,429,0.007454,30,635.559096,4416984,429,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,429,429,429,0.007488,30,632.639332,4416984,429,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,429,429,429,0.006794,30,697.291337,4416984,429,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,515,515,515,0.060688,30,135.04339,6365400,515,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,515,515,515,0.017553,30,466.902806,6365400,515,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,515,515,515,0.014543,30,563.542065,6365400,515,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,515,515,515,0.014403,30,568.995921,6365400,515,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,515,515,515,0.014398,30,569.219799,6365400,515,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,515,515,515,0.012842,30,638.166271,6365400,515,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,619,619,619,0.098992,30,143.755457,9195864,619,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,619,619,619,0.028755,30,494.89561,9195864,619,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,619,619,619,0.024709,30,575.926825,9195864,619,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,619,619,619,0.025165,30,565.488546,9195864,619,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,619,619,619,0.024617,30,578.086744,9195864,619,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,619,619,619,0.019835,30,717.452294,9195864,619,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,743,743,743,0.172207,30,142.911016,13249176,743,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,743,743,743,0.050367,30,488.621463,13249176,743,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,743,743,743,0.035676,30,689.828947,13249176,743,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,743,743,743,0.035582,30,691.642948,13249176,743,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,743,743,743,0.035421,30,694.795951,13249176,743,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,743,743,743,0.035319,30,696.7921,13249176,743,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,891,891,891,0.296835,30,142.978032,19053144,891,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,891,891,891,0.08739,30,485.648845,19053144,891,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,891,891,891,0.068708,30,617.701031,19053144,891,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,891,891,891,0.068822,30,616.675679,19053144,891,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,891,891,891,0.068662,30,618.110404,19053144,891,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,891,891,891,0.059336,30,715.258733,19053144,891,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,1069,1069,1069,0.508119,30,144.251072,27426264,1069,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,1069,1069,1069,0.149509,30,490.248999,27426264,1069,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,1069,1069,1069,0.101238,30,724.004318,27426264,1069,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,1069,1069,1069,0.100765,30,727.400076,27426264,1069,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,1069,1069,1069,0.100388,30,730.132902,27426264,1069,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,1069,1069,1069,0.100026,30,732.77779,27426264,1069,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,1283,1283,1283,0.991634,30,127.785018,39506136,1283,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,1283,1283,1283,0.260185,30,487.022757,39506136,1283,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,1283,1283,1283,0.184245,30,687.758212,39506136,1283,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,1283,1283,1283,0.18418,30,688.002102,39506136,1283,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,1283,1283,1283,0.184774,30,685.786939,39506136,1283,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,1283,1283,1283,0.172821,30,733.219268,39506136,1283,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,1540,1540,1540,1.463232,30,149.761527,56918400,1540,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,1540,1540,1540,0.467877,30,468.361741,56918400,1540,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,1540,1540,1540,0.314635,30,696.47616,56918400,1540,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,1540,1540,1540,0.314999,30,695.671403,56918400,1540,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,1540,1540,1540,0.314165,30,697.519361,56918400,1540,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,1540,1540,1540,0.307852,30,711.821582,56918400,1540,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,1848,1848,1848,2.69869,30,140.31503,81962496,1848,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,1848,1848,1848,0.808454,30,468.383906,81962496,1848,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,1848,1848,1848,0.527059,30,718.452517,81962496,1848,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,1848,1848,1848,0.525948,30,719.969924,81962496,1848,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,1848,1848,1848,0.528162,30,716.951614,81962496,1848,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,1848,1848,1848,0.508381,30,744.84793,81962496,1848,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,2218,2218,2218,5.545803,30,118.05149,118068576,2218,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,2218,2218,2218,1.432558,30,457.007822,118068576,2218,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,2218,2218,2218,0.884233,30,740.404768,118068576,2218,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,2218,2218,2218,0.882014,30,742.267826,118068576,2218,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,2218,2218,2218,0.883258,30,741.222066,118068576,2218,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,2218,2218,2218,0.884251,30,740.389737,118068576,2218,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,2662,2662,2662,13.785751,30,82.100342,170069856,2662,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,2662,2662,2662,2.658328,30,425.761941,170069856,2662,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,2662,2662,2662,1.604214,30,705.52603,170069856,2662,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,2662,2662,2662,1.608111,30,703.816579,170069856,2662,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,2662,2662,2662,1.60836,30,703.707437,170069856,2662,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,2662,2662,2662,1.54841,30,730.952841,170069856,2662,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,3194,3194,3194,46.900708,30,41.684691,244839264,3194,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,3194,3194,3194,4.89122,30,399.704311,244839264,3194,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,3194,3194,3194,2.798232,30,698.670392,244839264,3194,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,3194,3194,3194,2.789301,30,700.907316,244839264,3194,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,3194,3194,3194,2.786451,30,701.624123,244839264,3194,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,3194,3194,3194,2.655465,30,736.233212,244839264,3194,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,3833,3833,3833,177.603735,30,19.024603,352605336,3833,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,3833,3833,3833,9.296278,30,363.461645,352605336,3833,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,3833,3833,3833,4.853867,30,696.113166,352605336,3833,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,3833,3833,3833,4.854084,30,696.081978,352605336,3833,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,3833,3833,3833,4.844145,30,697.510227,352605336,3833,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,3833,3833,3833,4.55229,30,742.228702,352605336,3833,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,4600,4600,4600,448.208934,30,13.029995,507840000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,4600,4600,4600,18.263937,30,319.764574,507840000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,4600,4600,4600,8.243657,30,708.442896,507840000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,4600,4600,4600,8.249316,30,707.956903,507840000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,4600,4600,4600,8.250519,30,707.853639,507840000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,4600,4600,4600,7.926197,30,736.817388,507840000,4600,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,5520,5520,5520,857.10558,30,11.774275,731289600,5520,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,5520,5520,5520,35.771037,30,282.121999,731289600,5520,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,5520,5520,5520,14.372795,30,702.145711,731289600,5520,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,5520,5520,5520,14.383897,30,701.603776,731289600,5520,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,5520,5520,5520,14.395452,30,701.040614,731289600,5520,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,5520,5520,5520,13.645898,30,739.548005,731289600,5520,GFlop/s,cpu
+nvidia_grace_H100,FP64,V0 naive-omp ijk,6624,6624,6624,1628.89861,30,10.705776,1053057024,6624,GFlop/s,cpu
+nvidia_grace_H100,FP64,V1 ikj row locality,6624,6624,6624,72.159651,30,241.667249,1053057024,6624,GFlop/s,cpu
+nvidia_grace_H100,FP64,V2 blocked micro-kernel,6624,6624,6624,24.532769,30,710.829831,1053057024,6624,GFlop/s,cpu
+nvidia_grace_H100,FP64,V3 + NUMA first-touch,6624,6624,6624,24.614586,30,708.467112,1053057024,6624,GFlop/s,cpu
+nvidia_grace_H100,FP64,V4 + B replication,6624,6624,6624,24.515457,30,711.331814,1053057024,6624,GFlop/s,cpu
+nvidia_grace_H100,FP64,V5 + 2D tile grid,6624,6624,6624,23.081534,30,755.522775,1053057024,6624,GFlop/s,cpu

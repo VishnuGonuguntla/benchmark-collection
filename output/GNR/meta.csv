@@ -1,0 +1,24 @@
+arch,GNR
+cpu_name,Intel(R) Xeon(R) 6787P
+hostname,granrap2
+threads,172
+cpulist,0
+sockets,2
+cores_per_socket,86
+threads_per_core,1
+l1d_bytes,48770
+l2_bytes,2097152
+l3_bytes,352321536
+gpu_kind,none
+gpu_name,
+gpu_tag,
+toolchain,GCC
+use_likwid,1
+pin_mode,srun:cores+freq:high-high:performance
+cpu_bind,cores
+pin_freq,1
+cpu_freq_spec,high-high:performance
+slurm_job,149077
+sizes,4000
+datatypes,FP32 FP64 BF16
+repeats,30

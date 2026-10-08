@@ -1,0 +1,24 @@
+arch,ICX
+cpu_name,Intel(R) Xeon(R) Platinum 8360Y CPU @ 2.40GHz
+hostname,icx36
+threads,72
+cpulist,0
+sockets,2
+cores_per_socket,36
+threads_per_core,1
+l1d_bytes,43690
+l2_bytes,1310720
+l3_bytes,56623104
+gpu_kind,none
+gpu_name,
+gpu_tag,
+toolchain,GCC
+use_likwid,1
+pin_mode,srun:cores+freq:high-high:performance
+cpu_bind,cores
+pin_freq,1
+cpu_freq_spec,high-high:performance
+slurm_job,149099
+sizes,8000
+datatypes,FP32 FP64 BF16
+repeats,30

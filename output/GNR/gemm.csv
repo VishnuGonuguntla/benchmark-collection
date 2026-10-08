@@ -1,0 +1,2 @@
+proc,dtype,level,M,N,K,time_s,repeats,perf,footprint_bytes,cube,unit,source
+GNR,BF16,BF16 vdpbf16ps outer,7000,7000,7000,9.965805,30,2065.061554,294000000,7000,GFlop/s,cpu

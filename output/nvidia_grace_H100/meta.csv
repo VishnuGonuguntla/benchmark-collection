@@ -1,0 +1,24 @@
+arch,nvidia_grace
+cpu_name,nvidia_grace
+hostname,gracehop1
+threads,72
+cpulist,0
+sockets,1
+cores_per_socket,72
+threads_per_core,1
+l1d_bytes,58254
+l2_bytes,1048576
+l3_bytes,119537664
+gpu_kind,nvidia
+gpu_name,NVIDIA GH200 480GB
+gpu_tag,H100
+toolchain,GCC
+use_likwid,1
+pin_mode,srun:cores+freq:high-high:performance
+cpu_bind,cores
+pin_freq,1
+cpu_freq_spec,high-high:performance
+slurm_job,149101
+sizes,8000
+datatypes,FP32 FP64 BF16
+repeats,30
