@@ -365,7 +365,7 @@ static inline std::vector<LevelRow> run_ladder(LadderCtx &cx)
                 << "  (" << fails << " mismatching elems, max rel err "
                 << maxrel << ")" << std::endl;
     }
-    cudaFree(d_fails); cudaFree(d_maxrel);
+    (void)cudaFree(d_fails); (void)cudaFree(d_maxrel);
     std::cout << HLINE;
   }
 

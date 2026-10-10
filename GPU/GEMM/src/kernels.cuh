@@ -353,7 +353,16 @@ __global__ void gemm_v4_tuned(int M, int N, int K, ACCUM alpha,
   const int SBT_STR = BK + SMEM_PAD;
   const int BUF_SZ  = BM * SA_STR + BN * SBT_STR;
 
-  STORAGE *buf[2] = { smem, smem + BUF_SZ };
+  // STORAGE *buf[2] = { smem, smem + BUF_SZ };
+  // auto buf = [&](int s) -> STORAGE* { return smem + s * BUF_SZ; };
+  struct SmemBufs {
+    STORAGE *base;
+    int stride;
+    __device__ __forceinline__ STORAGE *operator[](int s) const {
+      return base + s * stride;
+    }
+  };
+  const SmemBufs buf{ smem, BUF_SZ };
 
   const int tid = threadIdx.y * blockDim.x + threadIdx.x;
   const int NT  = blockDim.x * blockDim.y;

@@ -47,6 +47,7 @@
 #define cudaMalloc                      hipMalloc
 #define cudaMemcpy                      hipMemcpy
 #define cudaMemcpyDeviceToDevice        hipMemcpyDeviceToDevice
+#define cudaMemcpyDeviceToHost          hipMemcpyDeviceToHost
 #define cudaMemset                      hipMemset
 #define cudaDeviceSynchronize           hipDeviceSynchronize
 #define cudaDeviceProp                  hipDeviceProp_t
@@ -94,7 +95,7 @@
 #define CUBLAS_COMPUTE_32F_FAST_TF32    HIPBLAS_COMPUTE_32F
 
 // hipBLAS's datatype enum type is hipblasDatatype_t across ROCm versions.
-typedef hipblasDatatype_t blasDataType_t;
+typedef hipDataType blasDataType_t;
 
 // HIPBLAS_STATUS_ARCH_MISMATCH and HIPBLAS_STATUS_MAPPING_ERROR do not exist
 // in all hipBLAS versions (absent in ROCm >= 6) and are intentionally not mapped.
