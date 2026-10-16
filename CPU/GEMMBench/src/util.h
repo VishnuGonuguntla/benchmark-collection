@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define DGEMM_BENCH_RESTRICT __restrict__
 #define DGEMM_IDX(i, j, N) ((i) * (N) + (j))
@@ -52,34 +53,34 @@
 #  define DGEMM_BENCH_WITH_BLAS 1
 #endif
 
-int allocate_matrix(size_t N, DGEMM_BENCH_DATATYPE* DGEMM_BENCH_RESTRICT *  matrix)
-{
-    DGEMM_BENCH_DATATYPE* mat = (DGEMM_BENCH_DATATYPE*) malloc(sizeof(DGEMM_BENCH_DATATYPE) * N * N);
-    if (!mat)
-    {
-        fprintf(stderr, "Failed to allocate %ld bytes: %s\n", sizeof(DGEMM_BENCH_DATATYPE) * N * N, strerror(ENOMEM));
-        return -ENOMEM;
-    }
-    *matrix = mat;
-    return 0;
-}
+// int allocate_matrix(size_t N, DGEMM_BENCH_DATATYPE* DGEMM_BENCH_RESTRICT *  matrix)
+// {
+//     DGEMM_BENCH_DATATYPE* mat = (DGEMM_BENCH_DATATYPE*) malloc(sizeof(DGEMM_BENCH_DATATYPE) * N * N);
+//     if (!mat)
+//     {
+//         fprintf(stderr, "Failed to allocate %ld bytes: %s\n", sizeof(DGEMM_BENCH_DATATYPE) * N * N, strerror(ENOMEM));
+//         return -ENOMEM;
+//     }
+//     *matrix = mat;
+//     return 0;
+// }
 
-int fill_matrices(DGEMM_BENCH_DATATYPE* A, DGEMM_BENCH_DATATYPE *B, DGEMM_BENCH_DATATYPE *C, size_t N)
-{
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
-    for (size_t i = 0; i < N; i++)
-    {
-        for (size_t j = 0; j < N; j++)
-        {
-            A[DGEMM_IDX(i, j, N)] = 1.0;
-            B[DGEMM_IDX(i, j, N)] = 0.5;
-            C[DGEMM_IDX(i, j, N)] = 2.0;
-        }
-    }
-    return 0;
-}
+// int fill_matrices(DGEMM_BENCH_DATATYPE* A, DGEMM_BENCH_DATATYPE *B, DGEMM_BENCH_DATATYPE *C, size_t N)
+// {
+// #ifdef _OPENMP
+// #pragma omp parallel for
+// #endif
+//     for (size_t i = 0; i < N; i++)
+//     {
+//         for (size_t j = 0; j < N; j++)
+//         {
+//             A[DGEMM_IDX(i, j, N)] = 1.0;
+//             B[DGEMM_IDX(i, j, N)] = 0.5;
+//             C[DGEMM_IDX(i, j, N)] = 2.0;
+//         }
+//     }
+//     return 0;
+// }
 
 static void print_column_title() {
     printf("| %-5s | %-16s | %-17s | %-16s | %-17s | %-18s |\n", "Size", "Per DGEMM FP ops", "Per DGEMM Runtime", "Total FP ops", "Total Runtime (s)", "FP_Rate (MFLOPS/s)");
@@ -99,4 +100,24 @@ static void print_stats(double dbl_N, double runtime, int repeat, double fp_ops)
     printf("| %-17.3f ", runtime);
     printf("| %-18.3f |\n", 1E-6 * ((double)repeat * fp_ops / runtime));
 }
+
+#ifndef MIN
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+#endif
+
+#ifndef MAX
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+#endif
+
+#ifndef ABS
+#define ABS(a) ((a) >= 0 ? (a) : -(a))
+#endif
+
+#define DEBUG_MESSAGE debug_printf
+
+#define FPRINTF(...)                                                                     \
+  if (fprintf(__VA_ARGS__) < 0) {                                                        \
+    printf("%s:%d Error writing to file\n", __FILE__, __LINE__);                         \
+  }
+
 #endif /*UTIL_H*/

@@ -335,6 +335,7 @@ const level_desc LEVEL_TABLE[LVL_COUNT] = {
     { LVL_V3,  "V3 + NUMA first-touch",      1, 1 },
     { LVL_V4,  "V4 + B replication",         1, 1 },
     { LVL_V5,  "V5 + 2D tile grid",          1, 1 },
+    { LVL_BF16, "BF16 vdpbf16ps outer",      0, 0 },
     { LVL_MKL,      BLAS_NAME_MKL      " (" CBLAS_GEMM_SYM ")", 0, 0 },
     { LVL_AOCL,     BLAS_NAME_AOCL     " (" CBLAS_GEMM_SYM ")", 0, 0 },
     { LVL_OPENBLAS, BLAS_NAME_OPENBLAS " (" CBLAS_GEMM_SYM ")", 0, 0 },

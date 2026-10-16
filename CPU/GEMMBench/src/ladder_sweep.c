@@ -17,6 +17,7 @@ static void omp_set_num_threads(int n) { (void)n; }
 #endif
 
 #include "runner.h"
+#include "profiler.h"
 
 #define SWEEP_ROW_CAP 512
 
@@ -27,6 +28,9 @@ int main(int argc, char **argv)
     if (err == 1) return 0;
     if (err < 0) return 1;
     if (a.tile_mode == TUNE_HELP) { ladder_print_tiles(); return 0; }
+
+    // LIKWID_MARKER_INIT must precede the first OpenMP region
+    ladder_markers_init();
 
     numa_topology_t topo;
     if (numa_probe(&topo) != 0) {
@@ -81,5 +85,6 @@ int main(int argc, char **argv)
     // duplicate it.  Print the table for human runs, stay silent for CSV runs.
     if (!a.csv && nrows > 0)
         ladder_print_table(rows, nrows, 1 /* shapes */, NULL);
+    ladder_markers_finish();         // writes the region results for likwid-perfctr
     return 0;
 }

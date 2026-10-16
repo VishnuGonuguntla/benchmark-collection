@@ -27,7 +27,7 @@
 // ---------------------------------------------------------------------------
 const blas_lib_desc BLAS_REGISTRY[LIB_COUNT] = {
     [LIB_MKL] = {
-        BLAS_TAG_MKL, BLAS_NAME_MKL, "MKL", "MKL_PATH", MKL_LIB_DEFAULT,
+        BLAS_TAG_MKL, BLAS_NAME_MKL, "MKL", "MKL", "MKL_PATH", MKL_LIB_DEFAULT,
         CBLAS_GEMM_SYM,
         // NOTE: the lowercase mkl_set_num_threads binds to the Fortran entry
         // point whose argument is a POINTER (int*) — calling it by value
@@ -37,7 +37,7 @@ const blas_lib_desc BLAS_REGISTRY[LIB_COUNT] = {
     [LIB_AOCL] = {
         // AMD AOCL-BLIS: BLIS compiled for the local uarch (libblis*.so is
         // the only AMD library with an AVX-512/Zen-optimised kernel set).
-        BLAS_TAG_AOCL, BLAS_NAME_AOCL, "AOCL", "AOCL_PATH", AOCL_LIB_DEFAULT,
+        BLAS_TAG_AOCL, BLAS_NAME_AOCL, "AOCL", "AOCL", "AOCL_PATH", AOCL_LIB_DEFAULT,
         CBLAS_GEMM_SYM, "blis_thread_set_num_threads", BLAS_NO_INFO,
     },
     [LIB_OPENBLAS] = {
@@ -46,7 +46,8 @@ const blas_lib_desc BLAS_REGISTRY[LIB_COUNT] = {
         // meaningful on all CPUs.  It also reports what it detected, which
         // is worth printing: the same binary can pick different kernels on
         // different machines.
-        BLAS_TAG_OPENBLAS, BLAS_NAME_OPENBLAS, "OpenBLAS", "OPENBLAS_PATH",
+        BLAS_TAG_OPENBLAS, BLAS_NAME_OPENBLAS, "OpenBLAS", "OPENBLAS",
+        "OPENBLAS_PATH",
         OPENBLAS_LIB_DEFAULT, CBLAS_GEMM_SYM, "openblas_set_num_threads",
         { "openblas_get_corename", "openblas_get_config", NULL },
     },

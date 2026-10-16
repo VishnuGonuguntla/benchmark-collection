@@ -91,6 +91,7 @@ typedef struct {
     const char *tag;              // config.mk / -l token
     const char *name;             // ladder rung label
     const char *col;              // comparison-table column header
+    const char *marker;           // LIKWID marker-region tag (see profiler.h)
     const char *pathvar;          // config.mk variable that locates it
     const char *path;             // soname baked in by the build (NULL if off)
     const char *gemm_sym;         // cblas entry point for the datatype

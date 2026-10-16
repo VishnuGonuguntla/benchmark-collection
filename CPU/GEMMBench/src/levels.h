@@ -23,6 +23,9 @@
 //                         and a socket-local replica of B per NUMA node
 //   V5 + 2D tile grid     V4 with per-node P x Q thread grid: row x column
 //                         bands maximize B/A panel reuse in LLC
+//   V6 BF16 outer         AVX512-BF16 (VDPBF16PS) outer product, fp32 I/O
+//                         (FP32 builds only; src/bf16.c; skipped at run time
+//                         on CPUs without AVX512_BF16)
 //
 //   vendor rungs   the library references from LVL_LIB_FIRST on: their
 //                         kernels are not here, they are dlopen'd — see the
@@ -66,7 +69,7 @@ int rung_v3_firsttouch(gemm_ctx *c, const gemm_tiles *t, const gemm_numa_ctx *nz
 int rung_v4_repl(gemm_ctx *c, const gemm_tiles *t, const gemm_numa_ctx *nz);
 int rung_v5_grid(gemm_ctx *c, const gemm_tiles *t, const gemm_numa_ctx *nz);
 
-// Level ids.  LVL_V0..LVL_V5 are the hand-written rungs; from LVL_LIB_FIRST
+// Level ids.  LVL_V0..LVL_BF16 are the hand-written rungs; from LVL_LIB_FIRST
 // up sit the vendor BLAS rungs, one slot per row of the registry in
 // src/library.h (blas_lib_id == level id - LVL_LIB_FIRST, checked there with
 // _Static_assert).  The Makefile assigns bit (1 << id) to each of them in
@@ -77,14 +80,15 @@ int rung_v5_grid(gemm_ctx *c, const gemm_tiles *t, const gemm_numa_ctx *nz);
 #define LVL_V3 3
 #define LVL_V4 4
 #define LVL_V5 5
+#define LVL_BF16 6                 // AVX512-BF16 rung (FP32 datatype builds)
 
-#define LVL_LIB_FIRST  6
+#define LVL_LIB_FIRST  7
 #define LVL_LIB_SLOTS  3                 // == LIB_COUNT in library.h
 #define LVL_MKL        (LVL_LIB_FIRST + 0)
 #define LVL_AOCL       (LVL_LIB_FIRST + 1)
 #define LVL_OPENBLAS   (LVL_LIB_FIRST + 2)
 
-#define LVL_HAND_COUNT LVL_LIB_FIRST     // hand-written rungs
+#define LVL_HAND_COUNT LVL_LIB_FIRST     // hand-written rungs (V0..V5 + BF16)
 #define LVL_COUNT      (LVL_LIB_FIRST + LVL_LIB_SLOTS)
 
 #define LVL_BIT(i) (1u << (i))

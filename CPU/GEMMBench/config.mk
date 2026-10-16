@@ -53,14 +53,30 @@ BLAS_LIBS ?= auto
 # OpenBLAS:  <root>/lib/libopenblas*.so
 #
 MKL_PATH       = /apps/SPACK/0.23.1/opt/linux-ubuntu24.04-x86_64_v3/gcc-13.3.0/intel-oneapi-mkl-2024.2.2-ypxe56o6gvnp36cijjhjl2ajfusjriqt
-AOCL_PATH      = /home/hpc/ihpc/ihpc171h/blas/blis/rt
+AOCL_PATH      = /home/hpc/ihpc/ihpc171h/aocl/submodules/blis/zen5
 OPENBLAS_PATH  = /home/hpc/ihpc/ihpc171h/blas/OpenBLAS/icx
 
 # Compile-time level selection: 'all' or a comma/space list of
-#   0 1 2 3 4 5 mkl aocl openblas
-# Library tokens select the matching vendor rung, which must also be listed in
-# BLAS_LIBS and have a *_PATH.  The runtime -l flag can only select from these.
+#   0 1 2 3 4 5 bf16 mkl aocl openblas
+# 'bf16' (V6) is the AVX512-BF16 rung: FP32 builds only; 'all' includes it
+# whenever the compiler accepts -mavx512bf16, and it is named an explicit
+# token too.  Library tokens select the matching vendor rung, which must
+# also be listed in BLAS_LIBS and have a *_PATH.  The runtime -l flag can
+# only select from these.
 LEVELS ?= all
+
+# ---------------------------------------------------------------------------
+# LIKWID marker API (hardware performance counters per rung).
+#   LIKWID=1 compiles the marker regions (src/profiler.c) in and links
+#   liblikwid, so the ladder runs as
+#       likwid-perfctr -m -g <GROUP> ./gemm_bench_<tc>_ladder ...
+#   and prints one performance-group table per rung (V0..V5 and every vendor
+#   library).  LIKWID_PATH points at an installation root; leave it empty to
+#   locate likwid through likwid-perfctr on $PATH (module load likwid).
+#   LIKWID=0 (default) compiles all markers away.
+# ---------------------------------------------------------------------------
+LIKWID ?= 1
+#LIKWID_PATH = /apps/.../likwid-5.4.1
 
 # ---------------------------------------------------------------------------
 # Legacy options (used by the non-LADDER builds)

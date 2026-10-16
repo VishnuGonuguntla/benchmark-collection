@@ -1,4 +1,6 @@
 #include "runner.h"
+#include "profiler.h"
+#include "bf16.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -111,7 +113,7 @@ static void usage(const char *prog, int is_sweep)
     printf("  -a <float>      alpha (default 1.0)\n");
     printf("  -b <float>      beta  (default 0.0)\n");
     printf("  -i <mode>       data init: random|constant (default random)\n");
-    printf("  -l <list>       rungs to run: 0..%d, %s, all"
+    printf("  -l <list>       rungs to run: 0..%d (6=bf16), %s, all"
            " (default: every compiled rung)\n",
            LVL_LIB_FIRST - 1, blas_tag_list());
     printf("  -T <MC,NC,KC|tune|help>   blocking params or autotune\n");
@@ -133,6 +135,7 @@ static int parse_levels(const char *s, unsigned *mask)
     while (tok) {
         int slot;
         if (!strcmp(tok, "all"))          *mask = 0;
+        else if (!strcmp(tok, "bf16"))    *mask |= LVL_BIT(LVL_BF16);
         else if ((slot = blas_lib_by_tag(tok)) >= 0)
             *mask |= LVL_BIT(LVL_OF_LIB(slot));
         else if (strlen(tok) == 1 && tok[0] >= '0' && tok[0] < '0' + LVL_LIB_FIRST)
@@ -344,7 +347,7 @@ static void stage_build(staged_t *s, const gemm_ctx *base, int mode,
 #include "timing.h"
 
 typedef struct { gemm_ctx *ctx; const gemm_tiles *t; const gemm_numa_ctx *nz;
-                 int id; blas_lib_t *lib; } rung_arg;
+                 int id; blas_lib_t *lib; const bf16_state *b16; } rung_arg;
 
 static void rung_dispatch(void *v)
 {
@@ -360,6 +363,7 @@ static void rung_dispatch(void *v)
     case LVL_V3: rung_v2_micro(r->ctx, r->t, r->nz); break;
     case LVL_V4: rung_v4_repl(r->ctx, r->t, r->nz); break;
     case LVL_V5: rung_v5_grid(r->ctx, r->t, r->nz); break;
+    case LVL_BF16: bf16_run(r->ctx, r->b16); break;
     default: break;                     // unreachable: rungs are enumerated
     }
 }
@@ -415,7 +419,7 @@ static gemm_tiles choose_tiles(int id, const gemm_ctx *c, const gemm_ctx *stage_
     int n = tiles_candidates(cand, 16);
     int best = 0; double best_gf = -1.0;
     for (int i = 0; i < n; i++) {
-        rung_arg r = { (gemm_ctx*)stage_ctx, &cand[i], nz, id, NULL };
+        rung_arg r = { (gemm_ctx*)stage_ctx, &cand[i], nz, id, NULL, NULL };
         double tot = 0.0;
         rung_dispatch(&r);                    // warmup
         double t0 = timestamp();
@@ -452,6 +456,7 @@ int ladder_run(gemm_ctx *ctx, ladder_args *a,
     }
 
     staged_t st_spread = {0}, st_group = {0};
+    bf16_state st_bf16 = {0};
     int reps = a->repeats;
 
     // ---- vendor library rungs: open whatever this build was configured for ----
@@ -527,7 +532,7 @@ int ladder_run(gemm_ctx *ctx, ladder_args *a,
         }
 
         // ---- select buffers / placement for this rung ----
-        int uses_numa = (id >= LVL_V3 && id < LVL_LIB_FIRST);
+        int uses_numa = LEVEL_TABLE[id].needs_numa;
         gemm_ctx *use_ctx = ctx;
         gemm_ctx staged_ctx;
         gemm_numa_ctx nz = { topo, NULL, {0} };
@@ -549,6 +554,20 @@ int ladder_run(gemm_ctx *ctx, ladder_args *a,
             use_ctx = &staged_ctx;
             nz.plan = &st_group.plan;
             memcpy(nz.Brep, st_group.Brep, sizeof(nz.Brep));
+        } else if (id == LVL_BF16) {
+            // staged Ap/Bp, built once outside the timed + marker regions
+            if (!bf16_supported()) {
+                printf("    %-30s NOT AVAILABLE: %s\n",
+                       LEVEL_TABLE[id].name,
+                       "CPU or build lacks AVX512_BF16 (needs -mavx512bf16, "
+                       "FP32 build; see LEVELS=bf16)");
+                continue;
+            }
+            if (!st_bf16.active && bf16_prepare(ctx, &st_bf16) != 0) {
+                printf("    %-30s SKIPPED: staging failed\n",
+                       LEVEL_TABLE[id].name);
+                continue;
+            }
         }
 
         gemm_tiles t = choose_tiles(id, ctx, use_ctx, (uses_numa ? &nz : NULL),
@@ -560,17 +579,27 @@ int ladder_run(gemm_ctx *ctx, ladder_args *a,
             memcpy(use_ctx->C, C0, nC * sizeof(GEMM_T));
             gemm_ctx vctx = *use_ctx;
             vctx.C = use_ctx->C;
-            rung_arg r = { &vctx, tp, (uses_numa ? &nz : NULL), id, lp };
+            rung_arg r = { &vctx, tp, (uses_numa ? &nz : NULL), id, lp, &st_bf16 };
             blas_use_threads(lp, nthreads);
             rung_dispatch(&r);
-            verify_against(use_ctx, use_ctx->C, ref, LEVEL_TABLE[id].name);
+            if (id == LVL_BF16)
+                // bf16 operand rounding makes the fp32/dgemm reference
+                // meaningless: compare against the kernel's own rounding
+                // corner check (as the old standalone -v did)
+                bf16_verify(use_ctx, C0, &st_bf16);
+            else
+                verify_against(use_ctx, use_ctx->C, ref, LEVEL_TABLE[id].name);
         }
 
         // ---- timed run ----
         memcpy(use_ctx->C, C0, nC * sizeof(GEMM_T));
-        rung_arg r = { use_ctx, tp, (uses_numa ? &nz : NULL), id, lp };
+        rung_arg r = { use_ctx, tp, (uses_numa ? &nz : NULL), id, lp, &st_bf16 };
         blas_use_threads(lp, nthreads);
 
+        // One LIKWID marker region per timed repetition; warmup, verification
+        // and -T tune calls stay unmarked.  Covers the vendor rungs too,
+        // because the tag comes from the level id (see src/profiler.h).
+        const char *mtag = rung_marker(id);
         double t_total = 0.0; int done = 0;
         rung_dispatch(&r);                    // warmup
         double t0 = timestamp();
@@ -578,7 +607,9 @@ int ladder_run(gemm_ctx *ctx, ladder_args *a,
             if (a->minutes > 0.0) {
                 if (timestamp() - t0 > a->minutes * 60.0) break;
             } else if (done >= reps) break;
+            ladder_marker_begin(mtag);
             rung_dispatch(&r);
+            ladder_marker_end(mtag);
             done++;
         }
         t_total = timestamp() - t0;
@@ -598,6 +629,7 @@ int ladder_run(gemm_ctx *ctx, ladder_args *a,
     if (ref) free(ref);
     stage_free(&st_spread);
     stage_free(&st_group);
+    bf16_free(&st_bf16);
     free(C0);
 
     if (nrows) *nrows = count;

@@ -2,14 +2,15 @@
 
 GEMM benchmarks for CPUs with two build flavors:
 
-* **Ladder** (new, default) — one binary runs a six-rung optimization ladder
+* **Ladder** (new, default) — one binary runs a seven-rung optimization ladder
   from a naive threaded `ijk` loop up to a NUMA-aware 2D-tiled micro-kernel,
-  and compares every rung against vendor BLAS libraries — **Intel MKL**,
-  **AMD AOCL/BLIS** and **OpenBLAS** — which are loaded at runtime from paths
-  configured in the makefile.  The ladder's optimization paradigm is
-  **memory localization** (loop order, cache blocking, register tiling)
-  followed by **ccNUMA domain localization** (first-touch placement,
-  socket-local replication, NUMA-aware compute scheduling).
+  adds an AVX512-BF16 throughput rung, and compares every rung against vendor
+  BLAS libraries — **Intel MKL**, **AMD AOCL/BLIS** and **OpenBLAS** — which
+  are loaded at runtime from paths configured in the makefile.  The ladder's
+  optimization paradigm is **memory localization** (loop order, cache
+  blocking, register tiling) followed by **ccNUMA domain localization**
+  (first-touch placement, socket-local replication, NUMA-aware compute
+  scheduling).
 * **Legacy** (`OPTIMIZATION=NAIVE|MKL|AOCL|OPENBLAS|CBLAS`) — the original
   single-variant binaries with link-time BLAS selection, kept for reproducing
   past measurements.
@@ -23,9 +24,11 @@ supported (`-m/-n/-k`), matching the interface of the sibling
 | File | Description |
 |------|-------------|
 | `src/levels.c/.h` | The ladder rungs V0–V5 + level/tile registry |
+| `src/bf16.c/.h` | V6 BF16 rung: AVX512-BF16 (`VDPBF16PS`) outer-product kernel, the only TU built with `-mavx512bf16` |
 | `src/numa.c/.h` | `/sys` NUMA topology, thread pinning, first-touch staging, `/proc/self/numa_maps` footprint report |
 | `src/library.c/.h` | Vendor-BLAS registry: runtime `dlopen` loading of MKL / AOCL-BLIS / OpenBLAS |
 | `src/runner.c/.h` | CLI, timing loops, `-T` autotune, `-v` verification, table/CSV output |
+| `src/profiler.c/.h` + `src/likwid-marker.h` | LIKWID marker regions: hardware performance counters per rung (`make LIKWID=1`) |
 | `src/ladder_bench.c` | Ladder binary, fixed shape |
 | `src/ladder_sweep.c` | Ladder binary, proportionally grown shape sweep |
 | `src/gemm_bench.c`, `src/gemm_sweep.c`, `src/cli.c`, `src/util.h` | Legacy sources (link-time BLAS) |
@@ -41,6 +44,7 @@ supported (`-m/-n/-k`), matching the interface of the sibling
 | **V3** + NUMA first-touch | *data* localization | threads pinned round-robin across nodes before pages are touched, so each page lands on its computing node |
 | **V4** + B replication | *domain* localization | contiguous per-node thread bands, row bands aligned to sockets, and a **socket-local copy of B** → no remote reads in the inner loop |
 | **V5** + 2D tile grid | compute scheduling | per-node P×Q row/column tile grid → A/B panel reuse in LLC, C tiles remain disjoint (no cross-node reduction) |
+| **V6** BF16 `vdpbf16ps` | bf16 tensor instruction | AVX512-BF16 outer product, 32 FLOPs/instruction, fp32 I/O with A converted on the fly and B pair-packed (setup outside the timed region); FP32 builds only, prints `NOT AVAILABLE` on CPUs without AVX512_BF16 |
 | **MKL** | vendor reference | `cblas_dgemm`/`sgemm` via `dlopen` |
 | **AOCL/BLIS** | vendor reference | same, from `libblis*.so` via `dlopen` |
 | **OpenBLAS** | vendor reference | same, from `libopenblas*.so` via `dlopen` |
@@ -58,8 +62,9 @@ footprint as evidence of the localization working.
 TOOLCHAIN    = GCC        # GCC | ICX | ICC | AOCC
 OPTIMIZATION = LADDER     # LADDER (new) or legacy: NAIVE/MKL/AOCL/OPENBLAS/CBLAS
 DATATYPE     = FP64       # FP64 | FP32 (legacy PRECISION=DP/SP also honored)
-LEVELS       = all        # compile-time subset: 0..5, mkl, aocl, openblas
+LEVELS       = all        # compile-time subset: 0..6 (6=bf16), mkl, aocl, openblas
 BLAS_LIBS    = auto       # which vendor libraries get a rung (see below)
+LIKWID       = 0          # 1 = compile the per-rung LIKWID marker regions
 MKL_PATH       = /path/to/mkl        # root or full libmkl_rt.so path
 AOCL_PATH      = /path/to/aocl       # root or full libblis*.so path
 OPENBLAS_PATH  = /path/to/openblas   # root or full libopenblas*.so path
@@ -76,6 +81,7 @@ make TOOLCHAIN=ICX                            # Intel oneAPI compiler
 make TOOLCHAIN=AOCC BLAS_LIBS=aocl            # AMD: AOCL-BLIS rung only
 make BLAS_LIBS=openblas OPENBLAS_PATH=/apps/spack/.../openblas-0.3.29
 make TOOLCHAIN=GCC LADDER_ARCH=-march=native  # unlock the wide register tile
+module load likwid && make LIKWID=1           # ladder with perf-counter regions
 ```
 
 ## Vendor library rungs (`BLAS_LIBS`)
@@ -109,8 +115,8 @@ on.  `LEVELS` also accepts the library tags, so `LEVELS="2,3,4,5,openblas"`
 builds a trimmed binary that still keeps the OpenBLAS reference.
 
 The rungs are data, not branches: `src/library.c`'s `BLAS_REGISTRY` holds one
-row per library (tag, labels, path variable, gemm symbol, thread-count setter,
-optional build-info symbols) and the Makefile holds the matching stanza (soname
+row per library (tag, labels, marker-region tag, path variable, gemm symbol,
+thread-count setter, optional build-info symbols) and the Makefile holds the matching stanza (soname
 patterns, level bit, macro names).  Adding a uarch-tuned library for a new CPU
 means one row, one stanza, one rung id in `src/levels.h` — the CLI (`-l`), the
 comparison table, the `-v` reference choice and the build messages all follow
@@ -143,7 +149,7 @@ srun --cpus-per-task=64 ./gemm_bench_gcc_ladder -s 4096 -r 5 -v
 | `-r <int>` / `-t <min>` | repeats per rung / minutes per rung (0 = use -r) |
 | `-a/-b <val>` | alpha / beta (defaults 1.0 / 0.0) |
 | `-i random\|constant` | data initialization |
-| `-l <list>` | runtime subset of compiled rungs: `0..5, mkl, aocl, openblas, all` |
+| `-l <list>` | runtime subset of compiled rungs: `0..6, bf16, mkl, aocl, openblas, all` |
 | `-T <MC,NC,KC>\|tune\|help` | blocking parameters, per-rung autotune, or list options |
 | `-v` | verify every rung against the reference (AOCL → MKL → OpenBLAS → V2) |
 | `-R` | NUMA topology, loaded library paths/builds, per-rung page footprint |
@@ -152,6 +158,43 @@ srun --cpus-per-task=64 ./gemm_bench_gcc_ladder -s 4096 -r 5 -v
 `gemm_sweep_gcc_ladder` takes a base shape (`-m/-n/-k` or `-s` cube) and
 grows all three dimensions ×1.2 per step until the smallest exceeds the
 `-s` cap, running the full ladder at each size.
+
+## Performance counters per rung (LIKWID markers)
+
+`make LIKWID=1` compiles the marker regions of `src/profiler.c` in and links
+`liblikwid`; the installation is located through `LIKWID_PATH` or, when that
+is empty, through `likwid-perfctr` on `$PATH` (so `module load likwid`
+suffices).  Every rung — the hand-written V0..V5, BF16, **and** the dlopen'd
+vendor libraries — is one LIKWID marker region, tagged `V0`..`V5` / `BF16` /
+`MKL` / `AOCL` / `OPENBLAS` (the vendor tags are registry data, so a newly
+added library gets its counter region with it).  A region is one **timed repetition**: the
+warmup, the `-v` verification and the `-T tune` calls run unmarked, so the
+per-region numbers describe the timed measurement, nothing else.  Under a
+Slurm cgroup, `likwid-perfctr` wants the CPU ids *within the cpuset*
+(`-C 0-$((SLURM_CPUS_ON_NODE-1))`, not absolute core ids).
+
+```bash
+# on an allocation (srun inside the wrapper, or run it on the node):
+srun likwid-perfctr -m -C 0:0-63 -g FP_RATE ./gemm_bench_gcc_ladder -s 4096 -r 3
+
+# one event group, only two rungs:
+likwid-perfctr -m -C 0:0-63 -g L2 ./gemm_bench_gcc_ladder -m 4096 -n 4096 -k 4096 -r 3 -l 2,aocl
+```
+
+After the application finishes, LIKWID prints one performance-group table
+per region — e.g. `V2 blocked micro-kernel` counted separately from `AOCL`.
+The vendor rungs are covered because LIKWID counts per hardware thread and
+the marker START/STOP runs on the full OpenMP team, whose pinned cores are
+exactly the cores the library threads get (`blas_use_threads` sizes the BLAS
+team to the ambient thread count).
+
+Without `LIKWID=1` every marker call compiles away; with `LIKWID=1` but run
+outside `likwid-perfctr -m` the markers stay disabled and the binary behaves
+exactly like the default build (no counter overhead, no pinning changes).
+Reading the counters requires PMU access on the machine — either
+`perf_event_paranoid <= 1` or a root-run `likwid-accessD`; where the PMU is
+locked for regular users, `likwid-perfctr` aborts with *"Access to
+performance monitoring registers locked"* before the benchmark starts.
 
 ## Output
 

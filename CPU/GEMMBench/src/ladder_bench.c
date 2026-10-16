@@ -1,11 +1,12 @@
 // Ladder benchmark, fixed rectangular problem:
 //   C[M,N] = alpha * A[M,K] * B[K,N] + beta * C[M,N]
-// Runs every compiled rung (V0..V5 + MKL/AOCL library rungs) in order and
-// prints the comparison table.  Thread count comes from the environment
-// (Slurm --cpus-per-task / OMP_NUM_THREADS).
+// Runs every compiled rung (V0..V5 + BF16 + MKL/AOCL/OpenBLAS library rungs)
+// in order and prints the comparison table.  Thread count comes from the
+// environment (Slurm --cpus-per-task / OMP_NUM_THREADS).
 #include "runner.h"
 #include "levels.h"
 #include "numa.h"
+#include "profiler.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +25,9 @@ int main(int argc, char **argv)
     if (rc < 0) return 1;
     if (a.tile_mode == TUNE_HELP) { ladder_print_tiles(); return 0; }
 
+    // LIKWID_MARKER_INIT must precede the first OpenMP region
+    ladder_markers_init();
+
     if (a.M > 0x7fffffffu || a.N > 0x7fffffffu || a.K > 0x7fffffffu) {
         fprintf(stderr, "dimensions must be < 2^31 (cblas LP64 interface)\n");
         return 1;
@@ -41,7 +45,7 @@ int main(int argc, char **argv)
     printf("shape: C[%zux%zu] = A[%zux%zu] x B[%zux%zu]   alpha=%g beta=%g\n",
            a.M, a.N, a.M, a.K, a.K, a.N, (double)a.alpha, (double)a.beta);
     if (a.report || topo.n_nodes > 1) fputs(numa_describe(&topo), stdout);
-
+    
     gemm_ctx ctx;
     memset(&ctx, 0, sizeof(ctx));
     ladder_allocate(&ctx, a.M, a.N, a.K, a.init_constant);
@@ -57,5 +61,6 @@ int main(int argc, char **argv)
     if (a.csv) ladder_write_csv(a.csv, rows, nrows);
 
     ladder_free(&ctx);
+    ladder_markers_finish();         // writes the region results for likwid-perfctr
     return 0;
 }

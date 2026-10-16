@@ -24,7 +24,7 @@ int omp_get_num_threads(void)
 }
 void omp_set_num_threads(int num_threads)
 {
-    fprintf("ERROR: Cannot set number of threads to %d, built without OpenMP support.\n", num_threads);
+    fprintf(stderr, "ERROR: Cannot set number of threads to %d, built without OpenMP support.\n", num_threads);
     return;
 }
 #endif

@@ -54,7 +54,7 @@ BLAS_DIRS_mkl         := lib/intel64 lib64 lib mkl/latest/lib/intel64 mkl/2024.2
 BLAS_SONAMES_mkl      := libmkl_rt.so
 BLAS_MACRO_mkl        := MKL_LIB_DEFAULT
 BLAS_HAS_mkl          := HAS_MKL_LEVEL
-BLAS_BIT_mkl          := 64
+BLAS_BIT_mkl          := 128
 
 BLAS_PATH_aocl        := $(AOCL_PATH)
 BLAS_PATHVAR_aocl     := AOCL_PATH
@@ -62,7 +62,7 @@ BLAS_DIRS_aocl        := lib lib64
 BLAS_SONAMES_aocl     := libblis-mt.so libblis.so
 BLAS_MACRO_aocl       := AOCL_LIB_DEFAULT
 BLAS_HAS_aocl         := HAS_AOCL_LEVEL
-BLAS_BIT_aocl         := 128
+BLAS_BIT_aocl         := 256
 
 BLAS_PATH_openblas    := $(OPENBLAS_PATH)
 BLAS_PATHVAR_openblas := OPENBLAS_PATH
@@ -70,7 +70,7 @@ BLAS_DIRS_openblas    := lib lib64
 BLAS_SONAMES_openblas := libopenblas.so libopenblas64_.so libopenblas*.so
 BLAS_MACRO_openblas   := OPENBLAS_LIB_DEFAULT
 BLAS_HAS_openblas     := HAS_OPENBLAS_LEVEL
-BLAS_BIT_openblas     := 256
+BLAS_BIT_openblas     := 512
 
 # Which libraries get a rung: auto | none | all | list of BLAS_TAGS
 # (config.mk documents the choice; the default is the per-CPU-vendor 'auto')
@@ -147,26 +147,59 @@ $(foreach t,$(BLAS_WANTED),\
       $(error BLAS_LIBS lists '$(t)' but $(BLAS_PATHVAR_$(t)) $(if $(BLAS_PATH_$(t)),holds no matching library,is unset) - set it to the install root or the full .so path))))
 
 # ---- compile-time level mask ----------------------------------------------
-# tokens: 0..5 (hand-written rungs) and the library tags of the registry above
+# tokens: 0..5 (hand-written rungs), bf16 (V6, see below) and the library
+# tags of the registry above
 LEVEL_BIT_0    := 1
 LEVEL_BIT_1    := 2
 LEVEL_BIT_2    := 4
 LEVEL_BIT_3    := 8
 LEVEL_BIT_4    := 16
 LEVEL_BIT_5    := 32
+LEVEL_BIT_bf16 := 64
 LEVEL_HAND     := 0 1 2 3 4 5
+
+# ---- BF16 rung (V6) ---------------------------------------------------------
+# src/bf16.c is the only TU compiled with -mavx512bf16 (target-specific
+# LFLAGS below), so the codegen of the other rungs never changes.  The
+# kernel computes the fp32-output ladder problem, so it needs DATATYPE=FP32;
+# LEVELS=all enables it whenever the compiler takes the flags, an explicit
+# 'bf16' token fails loudly when it cannot be built.  CPUs without
+# AVX512_BF16 skip the rung at run time (the harness prints NOT AVAILABLE).
+BF16_FLAGS := -mavx512f -mavx512bf16
+BF16_PROBE := $(shell echo | $(ENV_CC) $(BF16_FLAGS) -O0 -x c -c -o /dev/null - >/dev/null 2>&1 && echo yes)
 
 LEVELS ?= all
 LEVEL_TOKENS = $(subst $(comma),$(space),$(LEVELS))
 
+$(if $(filter all,$(LEVEL_TOKENS)),,\
+  $(if $(filter-out $(LEVEL_HAND) bf16 $(BLAS_TAGS),$(LEVEL_TOKENS)),\
+       $(error Unknown LEVELS token(s) '$(filter-out $(LEVEL_HAND) bf16 $(BLAS_TAGS),$(LEVEL_TOKENS))' - use $(LEVEL_HAND), bf16, the library tags $(BLAS_TAGS), or 'all')))
+
+# BF16 enablement: 'all' picks it leniently, an explicit token demands it
+# (and gets a hard error when it cannot be built)
+BF16_ON :=
+ifneq ($(filter bf16,$(LEVEL_TOKENS)),)
+  ifneq ($(DATATYPE),FP32)
+    $(error LEVELS lists 'bf16' but the BF16 rung computes the fp32-output ladder problem - it needs DATATYPE=FP32)
+  endif
+  ifeq ($(BF16_PROBE),)
+    $(error LEVELS lists 'bf16' but $(ENV_CC) does not accept $(BF16_FLAGS))
+  endif
+  BF16_ON := yes
+endif
 ifeq ($(filter all,$(LEVEL_TOKENS)),all)
-  LEVEL_BITS := $(foreach i,$(LEVEL_HAND),$(LEVEL_BIT_$(i))) $(foreach t,$(BLAS_ENABLED),$(BLAS_BIT_$(t)))
+  BF16_ON := $(if $(filter FP32,$(DATATYPE)),$(BF16_PROBE),)
+endif
+# same for the vendor tags
+$(foreach t,$(filter $(BLAS_TAGS),$(LEVEL_TOKENS)),\
+  $(if $(filter $(t),$(BLAS_ENABLED)),,\
+    $(error LEVELS references '$(t)' but that rung is not built - enable it in BLAS_LIBS and set $(BLAS_PATHVAR_$(t)))))
+
+ifeq ($(filter all,$(LEVEL_TOKENS)),all)
+  LEVEL_BITS := $(foreach i,$(LEVEL_HAND),$(LEVEL_BIT_$(i)))\
+                $(if $(BF16_ON),$(LEVEL_BIT_bf16))\
+                $(foreach t,$(BLAS_ENABLED),$(BLAS_BIT_$(t)))
 else
-  $(if $(filter-out $(LEVEL_HAND) $(BLAS_TAGS),$(LEVEL_TOKENS)),\
-       $(error Unknown LEVELS token(s) '$(filter-out $(LEVEL_HAND) $(BLAS_TAGS),$(LEVEL_TOKENS))' - use $(LEVEL_HAND), the library tags $(BLAS_TAGS), or 'all'))
-  $(foreach t,$(filter $(BLAS_TAGS),$(LEVEL_TOKENS)),\
-    $(if $(filter $(t),$(BLAS_ENABLED)),,\
-      $(error LEVELS references '$(t)' but that rung is not built - enable it in BLAS_LIBS and set $(BLAS_PATHVAR_$(t)))))
   LEVEL_BITS := $(foreach t,$(LEVEL_TOKENS),\
                  $(if $(filter $(t),$(BLAS_TAGS)),$(BLAS_BIT_$(t)),$(LEVEL_BIT_$(t))))
 endif
@@ -179,16 +212,42 @@ LDEFS += -DLEVEL_MASK=$(LEVEL_MASK)
 $(info ladder: $(DATATYPE) datatype, level mask $(LEVEL_MASK))
 $(info ladder: vendor rungs $(if $(BLAS_ENABLED),$(BLAS_ENABLED),none))
 $(foreach t,$(BLAS_ENABLED),$(info ladder:   $(t) <- $(BLAS_SO_$(t))))
+$(info ladder: BF16 rung $(if $(BF16_ON),on ($(BF16_FLAGS) on src/bf16.c only),off$(if $(filter all,$(LEVEL_TOKENS)), - LEVELS=all: $(if $(filter FP32,$(DATATYPE)),compiler lacks $(BF16_FLAGS),needs DATATYPE=FP32))))
 
 # ---- rules -----------------------------------------------------------------
-LADDER_COMMON = obj/runner.o obj/levels.o obj/library.o obj/numa.o obj/timing.o
+LADDER_COMMON = obj/runner.o obj/levels.o obj/library.o obj/numa.o obj/timing.o obj/profiler.o obj/bf16.o
 LFLAGS = $(ENV_CFLAGS) $(ENV_OMP_FLAG) $(ENV_INCDIRS) $(LDEFS)
 # Ladder-specific arch default: x86-64-v3 (AVX2+FMA era).  On the target
 # machine itself, overriding with  make LADDER_ARCH=-march=native  is the
 # honest way to benchmark SIMD rungs (V2+ benefit directly).
-LADDER_ARCH ?=  # -march=x86-64-v4 #  -mcpu=neoverse-v2 
+LADDER_ARCH ?=  -march=x86-64-v4 #  -mcpu=neoverse-v2 
 LFLAGS += $(LADDER_ARCH)
 LLIBS  = $(ENV_LIBDIRS) $(ENV_LIBS) -ldl -lm
+
+# ---- LIKWID marker API ------------------------------------------------------
+# LIKWID=1 builds the rungs with marker regions (see src/profiler.h) so the
+# ladder can be run through  likwid-perfctr -m -g <GROUP> ./gemm_bench_...
+# LIKWID_PATH may point at an installation root; when empty, likwid-perfctr
+# from $PATH locates it (e.g. after "module load likwid").
+LIKWID ?= 0
+ifeq ($(LIKWID),1)
+  ifeq ($(strip $(LIKWID_PATH)),)
+    LIKWID_BIN := $(shell command -v likwid-perfctr 2>/dev/null)
+    ifneq ($(LIKWID_BIN),)
+      LIKWID_PATH := $(realpath $(dir $(LIKWID_BIN))/..)
+    endif
+  endif
+  ifeq ($(strip $(LIKWID_PATH)),)
+    $(error LIKWID=1 needs LIKWID_PATH or likwid-perfctr on $$PATH - module load likwid or set LIKWID_PATH=/path/to/likwid)
+  endif
+  LIKWID_LIBDIR := $(firstword $(wildcard $(LIKWID_PATH)/lib $(LIKWID_PATH)/lib64))
+  ifeq ($(strip $(LIKWID_LIBDIR)),)
+    $(error LIKWID_PATH='$(LIKWID_PATH)' has no lib/ or lib64/ directory)
+  endif
+  LFLAGS += -DLIKWID_PERFMON -I$(LIKWID_PATH)/include
+  LLIBS  += -L$(LIKWID_LIBDIR) -llikwid -Wl,-rpath,$(LIKWID_LIBDIR)
+  $(info ladder: LIKWID markers <- $(LIKWID_LIBDIR))
+endif
 
 BSUF = $(shell echo "$(strip $(TOOLCHAIN))_LADDER" | tr '[:upper:]' '[:lower:]')
 EXE1 = gemm_bench_$(BSUF)
@@ -209,6 +268,13 @@ FORCE:
 
 obj/%.o: src/%.c obj/.flags $(MAKEFILE_LIST) | obj
 	$(CC) $(LFLAGS) -c $< -o $@
+
+# The BF16 kernel is the only TU that sees -mavx512bf16; every other object
+# keeps its exact codegen (target-specific variables apply through the
+# pattern rule above).
+ifneq ($(BF16_PROBE),)
+obj/bf16.o: LFLAGS += $(BF16_FLAGS)
+endif
 
 $(EXE1): obj/ladder_bench.o $(LADDER_COMMON)
 	$(LD) $(LFLAGS) $^ -o $@ $(LLIBS)
@@ -273,7 +339,7 @@ endif
 
 MAIN_SRCS = src/gemm_bench.c src/gemm_sweep.c
 LADDER_SRCS = src/runner.c src/levels.c src/library.c src/numa.c \
-              src/ladder_bench.c src/ladder_sweep.c
+              src/ladder_bench.c src/ladder_sweep.c src/profiler.c src/bf16.c
 
 # 3. Safely collect ALL OTHER .c files using wildcard and filter-out
 ALL_SRCS = $(wildcard src/*.c)
