@@ -3,6 +3,7 @@ gemm_sweep
 tp64_*
 fp32_*
 scaling_results
+results/
 
 .rocprofv3
 pass_1
